@@ -1,4 +1,5 @@
 package com.kycdaomobile
+import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
@@ -14,7 +15,18 @@ class KycdaoMobileModule(reactContext: ReactApplicationContext) : ReactContextBa
     // See https://reactnative.dev/docs/native-modules-android
     @ReactMethod
     fun multiply(a: Int, b: Int, promise: Promise) {
-          promise.resolve(a * b)
-        }
-
+      Log.d("KycdaoMobile", "a: $a, b: $b")
+      promise.resolve(a * b)
     }
+
+    @ReactMethod
+    fun printStuff(stuff: String) {
+      Log.d("KycdaoMobile", stuff)
+    }
+
+    @ReactMethod
+    fun launchKycFlow() {
+      Log.d("KycdaoMobile", "launchKycFlow()")
+    }
+
+}
