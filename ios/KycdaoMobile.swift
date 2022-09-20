@@ -27,9 +27,9 @@ struct RNWCURL: Codable {
 struct RNKYCSession: Codable {
     var id: String
     var walletAddress: String
-    var network: Int
-    var kycConfig: SmartContractConfig?
-    var accreditedConfig: SmartContractConfig?
+    var network: String
+    var kycConfig: RNSmartContractConfig?
+    var accreditedConfig: RNSmartContractConfig?
     var loginProof: String
     var isLoggedIn: Bool
     var emailAddress: String?
@@ -41,6 +41,13 @@ struct RNKYCSession: Codable {
     var legalEntityStatus: Bool
     var requiredInformationProvided: Bool
     var verificationStatus: SimplifiedVerificationStatus
+}
+
+struct RNSmartContractConfig: Codable {
+    let address: String
+    let paymentDiscountPercent: Int
+    let verificationType: VerificationType
+    let network: String
 }
 
 extension WalletSession {
@@ -64,13 +71,22 @@ extension WCURL {
     }
 }
 
+extension SmartContractConfig {
+    var asReactModel: RNSmartContractConfig {
+        RNSmartContractConfig(address: address,
+                              paymentDiscountPercent: paymentDiscountPercent,
+                              verificationType: verificationType,
+                              network: network.caip2Id)
+    }
+}
+
 extension KYCSession {
     var asReactModel: RNKYCSession {
         RNKYCSession(id: self.id,
                      walletAddress: self.walletAddress,
-                     network: self.network.chainId,
-                     kycConfig: self.kycConfig,
-                     accreditedConfig: self.accreditedConfig,
+                     network: self.network.caip2Id,
+                     kycConfig: self.kycConfig?.asReactModel,
+                     accreditedConfig: self.accreditedConfig?.asReactModel,
                      loginProof: self.loginProof,
                      isLoggedIn: self.isLoggedIn,
                      emailAddress: self.emailAddress,
@@ -222,6 +238,7 @@ class RNWalletConnectManager: RCTEventEmitter {
             do {
             
                 let wallets = try await WalletConnectManager.listWallets()
+                print(wallets)
                 let array = try wallets.encodeToArray()
                 resolve(array)
                 
@@ -287,12 +304,12 @@ class RNKYCManager: NSObject {
     private var sessions: Set<KYCSession> = Set()
     
     @objc(createSession:network:resolve:reject:)
-    func createSession(_ walletAddress: String, network chainId: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    func createSession(_ walletAddress: String, network caip2Id: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 
-                guard let network = Network(chainId: chainId) else { throw KYCError.genericError }
+                guard let network = Network(caip2Id: caip2Id) else { throw KYCError.genericError }
                 let session = try await KYCManager.shared.createSession(walletAddress: walletAddress, network: network)
                 sessions.insert(session)
                 

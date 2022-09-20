@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text, NativeEventEmitter, Button } from 'react-native';
-import { KycReactEvents, launchKycFlow, listWallets, multiply, printStuff, startListening, RNWalletConnectManager, connect, WalletSession, createSession, sign, login, Network } from 'kycdao-mobile';
+import { KycReactEvents, launchKycFlow, multiply, printStuff, WalletConnectManager, WalletSession, Network, KYCManager } from 'kycdao-mobile';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
@@ -9,23 +9,30 @@ export default function App() {
   React.useEffect(() => {
     multiply(3, 7).then(setResult);
 
-    const eventEmitter = new NativeEventEmitter(RNWalletConnectManager);
-    this.eventListener = eventEmitter.addListener(KycReactEvents.WCSessionStarted, async (event) => {
+    var walletConnectManager = WalletConnectManager.getInstance();
+    //const eventEmitter = walletConnectManager.getEventEmitter();
+    this.eventListener = walletConnectManager.addSessionStartListener(async (event) => {
       var walletSession = event as WalletSession;
-      var network = walletSession.chainId;
+      var network = walletSession.network;
+      console.log("Session received");
+      console.log(walletSession);
       console.log(network);
-      if (walletSession !== undefined) {
+      if (walletSession !== undefined && network !== undefined) {
         console.log("session started event");
         console.log(walletSession.name); // "someValue"
         console.log(walletSession);
         console.log(walletSession.accounts[0]!);
         console.log(network);
-        var kycSession = await createSession(walletSession.accounts[0]!, network);
+        var kycManager = KYCManager.getInstance();
+        var kycSession = await kycManager.createSession(walletSession.accounts[0]!, network);
         console.log(kycSession);
-        var signature = await sign(walletSession, walletSession.accounts[0]!, kycSession.loginProof);
+        console.log(walletSession.accounts[0]!);
+        console.log(kycSession.loginProof);
+        walletSession.test();
+        var signature = await walletSession.sign(walletSession.accounts[0]!, kycSession.loginProof);
         console.log(signature);
-        await login(kycSession, signature);
-        console.log("Hurray")
+        await kycSession.login(signature);
+        console.log("Hurray");
       }
     });
 
@@ -41,15 +48,18 @@ export default function App() {
         title="Press me"
         color="#f194ff"
         onPress={ async () => {
-          var id = await startListening();
+          var walletConnectManager = WalletConnectManager.getInstance();
+          var id = await walletConnectManager.startListening();
           printStuff(id);
-          var wallets = await listWallets();
+          var wallets = await walletConnectManager.listWallets();
+          console.log(wallets);
           console.debug(wallets.map(x => x.name));
+          printStuff(wallets.map(x => x.name).join(","));
           console.debug(wallets);
           console.debug(wallets.find(x => x.name === "MetaMask"));
           var metamask = wallets.find(x => x.name === "MetaMask");
           if (metamask !== undefined) {
-            await connect(metamask);
+            await walletConnectManager.connect(metamask);
           }
          }}
       />

@@ -30,7 +30,7 @@ RCT_EXTERN_METHOD(sign:(NSDictionary)sessionData account:(NSString)account messa
 
 @interface RCT_EXTERN_MODULE(RNKYCManager, NSObject)
 
-RCT_EXTERN_METHOD(createSession:(NSString)walletAddress network:(int)network resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(createSession:(NSString)walletAddress network:(NSString)network resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(login:(NSDictionary)sessionData signature:(NSString)signature resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 
 @end
