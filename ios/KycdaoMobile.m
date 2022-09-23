@@ -32,6 +32,7 @@ RCT_EXTERN_METHOD(sign:(NSDictionary)sessionData account:(NSString)account messa
 
 RCT_EXTERN_METHOD(createSession:(NSString)walletAddress walletSession:(NSDictionary)walletSessionData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(login:(NSDictionary)sessionData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(freshSessionData:(NSDictionary)oldSessionData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(personalSignSuccess:(NSDictionary)walletSessionData signature:(NSString)signature)
 RCT_EXTERN_METHOD(personalSignFailure:(NSDictionary)walletSessionData reason:(NSString)reason)

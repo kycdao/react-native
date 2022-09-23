@@ -185,6 +185,28 @@ class RNKYCManager: RCTEventEmitter {
         }
     }
     
+    @objc(freshSessionData:resolve:reject:)
+    func freshSessionData(_ oldSessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        
+        do {
+            
+            let rnOldSession = try RNKYCSession.decode(from: oldSessionData)
+            guard let session = sessions.first(where: { $0.id == rnOldSession.id })
+            else {
+                throw KYCError.genericError
+            }
+            
+            let rnSession = try session.asReactModel.encodeToDictionary()
+            resolve(rnSession)
+            
+        } catch let error {
+            
+            reject("login", "Failed to login with wallet", error)
+            
+        }
+        
+    }
+    
     @objc override static func requiresMainQueueSetup() -> Bool {
         return true
     }

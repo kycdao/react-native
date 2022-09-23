@@ -101,9 +101,46 @@ export class KYCSession {
     this.walletSession = walletSession
   }
 
-  public login(): Promise<void> {
+  public async login() {
     console.log("started login");
-    return RNKYCManager.login(this);
+    await RNKYCManager.login(this);
+    await this.syncSessionData();
+  }
+
+  private async syncSessionData() {
+
+    try {
+      
+      var sessionDataUpdate = await RNKYCManager.freshSessionData(this) as KYCSessionInterface;
+
+      if (sessionDataUpdate !== undefined) {
+
+        this.id = sessionDataUpdate.id;
+        this.walletAddress = sessionDataUpdate.walletAddress;
+        this.network = sessionDataUpdate.network;
+        this.kycConfig = sessionDataUpdate.kycConfig;
+        this.accreditedConfig = sessionDataUpdate.accreditedConfig;
+        this.loginProof = sessionDataUpdate.loginProof;
+        this.isLoggedIn = sessionDataUpdate.isLoggedIn;
+        this.emailAddress = sessionDataUpdate.emailAddress;
+        this.emailConfirmed = sessionDataUpdate.emailConfirmed;
+        this.residency = sessionDataUpdate.residency;
+        this.residencyProvided = sessionDataUpdate.residencyProvided;
+        this.emailProvided = sessionDataUpdate.emailProvided;
+        this.disclaimerAccepted = sessionDataUpdate.disclaimerAccepted;
+        this.legalEntityStatus = sessionDataUpdate.legalEntityStatus;
+        this.requiredInformationProvided = sessionDataUpdate.requiredInformationProvided;
+        this.verificationStatus = sessionDataUpdate.verificationStatus;
+
+      } else {
+        throw TypeError("Session data update structure did not meet expected TypeScript model");
+      }
+
+    } catch (error) {
+      console.error("Failed to sync session data");
+      console.error(error);
+    }
+
   }
 
 }
