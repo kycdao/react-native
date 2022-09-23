@@ -28,9 +28,15 @@ RCT_EXTERN_METHOD(sign:(NSDictionary)sessionData account:(NSString)account messa
 
 @end
 
-@interface RCT_EXTERN_MODULE(RNKYCManager, NSObject)
+@interface RCT_EXTERN_MODULE(RNKYCManager, RCTEventEmitter)
 
-RCT_EXTERN_METHOD(createSession:(NSString)walletAddress network:(NSString)network resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(login:(NSDictionary)sessionData signature:(NSString)signature resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(createSession:(NSString)walletAddress walletSession:(NSDictionary)walletSessionData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(login:(NSDictionary)sessionData resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(personalSignSuccess:(NSDictionary)walletSessionData signature:(NSString)signature)
+RCT_EXTERN_METHOD(personalSignFailure:(NSDictionary)walletSessionData reason:(NSString)reason)
+
+RCT_EXTERN_METHOD(mintingTransactionSuccess:(NSDictionary)walletSessionData txHash:(NSString)txHash)
+RCT_EXTERN_METHOD(mintingTransactionFailure:(NSDictionary)walletSessionData reason:(NSString)reason)
 
 @end

@@ -104,13 +104,13 @@ class RNWalletConnectManager: RCTEventEmitter {
                     throw KYCError.genericError
                 }
                 
-                let signature = try await session.sign(account: account, message: message)
+                let signature = try await session.personalSign(walletAddress: account, message: message)
                 resolve(signature)
                 
             } catch let error {
                 
                 print("Failed to create signature\n\(sessionData)\n\(account)\n\(message)")
-                reject("sign", "Failed to create signaturet", error)
+                reject("sign", "Failed to create signature", error)
                 
             }
         }

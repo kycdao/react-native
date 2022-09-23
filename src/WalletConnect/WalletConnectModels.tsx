@@ -1,3 +1,4 @@
+import type { WalletSessionInterface } from "src/KYC/KYCModels";
 
 export interface Wallet {
     id: string;
@@ -15,11 +16,10 @@ export interface Wallet {
     absoluteString: string;
   }
 
-  export interface WalletSessionInterface {
+  export interface WalletConnectSessionInterface extends WalletSessionInterface {
     url: WCURL;
     walletId?: string;
     accounts?: [string];
     icon?: string;
     name?: string;
-    chainId?: number;
   }

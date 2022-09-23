@@ -11,15 +11,93 @@ import WalletConnectSwift
 
 enum KycReactEvents: String, Codable {
     case wcSessionStarted = "WC_SESSION_STARTED"
+    case methodPersonalSign = "METHOD_PERSONAL_SIGN"
+    case methodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
 
-struct RNWalletSession: Codable {
+class RNWalletSession: Codable, WalletSessionProtocol {
+    var id: String
     var url: RNWCURL
     var walletId: String?
-    var accounts: [String]?
+    var accounts: [String]
     var icon: URL?
-    var name: String?
-    var chainId: Int?
+    var name: String
+    var chainId: String
+    var network: Network
+    
+    internal var personalSignHandler: ((String, String) -> Void)?
+    internal var sendMintingTransactionHandler: ((String, MintingProperties) -> Void)?
+    var personalSignContinuation: CheckedContinuation<String, Error>?
+    var sendMintingTransactionContinuation: CheckedContinuation<String, Error>?
+    
+    func personalSign(walletAddress: String, message: String) async throws -> String {
+        guard let personalSignHandler = personalSignHandler else {
+            throw KYCError.genericError
+        }
+
+        personalSignHandler(walletAddress, message)
+        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<String, Error>) in
+            self?.personalSignContinuation = continuation
+        }
+    }
+    
+    func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> String {
+        guard let sendMintingTransactionHandler = sendMintingTransactionHandler else {
+            throw KYCError.genericError
+        }
+
+        sendMintingTransactionHandler(walletAddress, mintingProperties)
+        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<String, Error>) in
+            self?.sendMintingTransactionContinuation = continuation
+        }
+    }
+    
+    
+    public enum RNWalletSessionKeys: String, CodingKey {
+        case id
+        case url
+        case walletId
+        case accounts
+        case icon
+        case name
+        case chainId
+        case network
+    }
+    
+    init(id: String, url: RNWCURL, walletId: String?, accounts: [String], icon: URL?, name: String, chainId: String, network: Network) {
+        self.id = id
+        self.url = url
+        self.walletId = walletId
+        self.accounts = accounts
+        self.icon = icon
+        self.name = name
+        self.chainId = chainId
+        self.network = network
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: RNWalletSessionKeys.self)
+        self.url = try container.decode(RNWCURL.self, forKey: .url)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.walletId = try container.decodeIfPresent(String.self, forKey: .walletId)
+        self.accounts = try container.decode([String].self, forKey: .accounts)
+        self.icon = try container.decodeIfPresent(URL.self, forKey: .icon)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.chainId = try container.decode(String.self, forKey: .chainId)
+        self.network = try container.decode(Network.self, forKey: .network)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: RNWalletSessionKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.url, forKey: .url)
+        try container.encodeIfPresent(self.walletId, forKey: .walletId)
+        try container.encode(self.accounts, forKey: .accounts)
+        try container.encodeIfPresent(self.icon, forKey: .icon)
+        try container.encode(self.name, forKey: .name)
+        try container.encode(self.chainId, forKey: .chainId)
+        try container.encode(self.network, forKey: .network)
+    }
 }
 
 struct RNWCURL: Codable {

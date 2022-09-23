@@ -11,12 +11,14 @@ import WalletConnectSwift
 
 extension WalletSession {
     var asReactModel: RNWalletSession {
-        RNWalletSession(url: url.asReactModel,
+        RNWalletSession(id: id,
+                        url: url.asReactModel,
                         walletId: walletId,
                         accounts: accounts,
                         icon: icon,
                         name: name,
-                        chainId: chainId)
+                        chainId: chainId,
+                        network: network)
     }
 }
 

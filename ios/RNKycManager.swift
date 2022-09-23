@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import React
 import KycDao
 import Combine
 
@@ -20,18 +21,49 @@ extension KYCSession: Hashable, Equatable {
 }
 
 @objc(RNKYCManager)
-class RNKYCManager: NSObject {
+class RNKYCManager: RCTEventEmitter {
     
     private var sessions: Set<KYCSession> = Set()
+    private var personalSignContinuation: CheckedContinuation<String, Error>?
+    private var hasListeners = false
     
-    @objc(createSession:network:resolve:reject:)
-    func createSession(_ walletAddress: String, network caip2Id: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    override func startObserving() {
+        hasListeners = true
+    }
+    
+    override func stopObserving() {
+        hasListeners = false
+    }
+    
+    override func supportedEvents() -> [String]! {
+        [KycReactEvents.methodPersonalSign.rawValue,
+         KycReactEvents.methodMintingTransaction.rawValue]
+    }
+    
+    @objc(createSession:walletSession:resolve:reject:)
+    func createSession(_ walletAddress: String, walletSession walletSessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 
-                guard let network = Network(caip2Id: caip2Id) else { throw KYCError.genericError }
-                let session = try await KYCManager.shared.createSession(walletAddress: walletAddress, network: network)
+                let walletSession = try RNWalletSession.decode(from: walletSessionData)
+                
+                walletSession.personalSignHandler = { [weak self] walletAddress, message in
+                    self?.sendEvent(withName: KycReactEvents.methodPersonalSign.rawValue,
+                                    body: ["id": walletSession.id,
+                                           "walletAddress": walletAddress,
+                                           "message": message])
+                }
+                
+                walletSession.sendMintingTransactionHandler = { [weak self] walletAddress, mintingProperties in
+                    self?.sendEvent(withName: KycReactEvents.methodMintingTransaction.rawValue,
+                                    body: ["id": walletSession.id,
+                                           "walletAddress": walletAddress,
+                                           "mintingProperties": mintingProperties])
+                }
+                
+                //guard let network = Network(caip2Id: caip2Id) else { throw KYCError.genericError }
+                let session = try await KYCManager.shared.createSession(walletAddress: walletAddress, walletSession: walletSession)
                 sessions.insert(session)
                 
                 let rnSession = try session.asReactModel.encodeToDictionary()
@@ -45,8 +77,92 @@ class RNKYCManager: NSObject {
         }
     }
     
-    @objc(login:signature:resolve:reject:)
-    func login(_ sessionData: [String: Any], signature: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(personalSignSuccess:signature:)
+    func personalSignSuccess(_ walletSessionData: [String: Any], signature: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KYCError.genericError
+            }
+            
+            walletSession.personalSignContinuation?.resume(returning: signature)
+            
+        } catch {
+            
+            print("Can not find session for personal sign response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(personalSignFailure:reason:)
+    func personalSignFailure(_ walletSessionData: [String: Any], reason: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KYCError.genericError
+            }
+
+            walletSession.personalSignContinuation?.resume(throwing: KYCError.genericError)
+            
+        } catch {
+            
+            print("Can not find session for personal sign response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(mintingTransactionSuccess:txHash:)
+    func mintingTransactionSuccess(_ walletSessionData: [String: Any], txHash: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KYCError.genericError
+            }
+            
+            walletSession.sendMintingTransactionContinuation?.resume(returning: txHash)
+            
+        } catch {
+            
+            print("Can not find session for minting transaction response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(mintingTransactionFailure:reason:)
+    func mintingTransactionFailure(_ walletSessionData: [String: Any], reason: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KYCError.genericError
+            }
+
+            walletSession.sendMintingTransactionContinuation?.resume(throwing: KYCError.genericError)
+            
+        } catch {
+            
+            print("Can not find session for minting transaction response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(login:resolve:reject:)
+    func login(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
@@ -57,7 +173,7 @@ class RNKYCManager: NSObject {
                     throw KYCError.genericError
                 }
                 
-                try await session.login(signature: signature)
+                try await session.login()
                 
                 resolve(())
                 
@@ -69,7 +185,7 @@ class RNKYCManager: NSObject {
         }
     }
     
-    @objc static func requiresMainQueueSetup() -> Bool {
+    @objc override static func requiresMainQueueSetup() -> Bool {
         return true
     }
     

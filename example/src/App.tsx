@@ -17,21 +17,20 @@ export default function App() {
       console.log("Session received");
       console.log(walletSession);
       console.log(network);
-      if (walletSession !== undefined && network !== undefined) {
+      if (network !== undefined) {
         console.log("session started event");
         console.log(walletSession.name); // "someValue"
         console.log(walletSession);
         console.log(walletSession.accounts[0]!);
         console.log(network);
         var kycManager = KYCManager.getInstance();
-        var kycSession = await kycManager.createSession(walletSession.accounts[0]!, network);
+        var kycSession = await kycManager.createSession(walletSession.accounts[0]!, walletSession);
         console.log(kycSession);
         console.log(walletSession.accounts[0]!);
         console.log(kycSession.loginProof);
         walletSession.test();
-        var signature = await walletSession.sign(walletSession.accounts[0]!, kycSession.loginProof);
-        console.log(signature);
-        await kycSession.login(signature);
+        await new Promise(f => setTimeout(f, 10000));
+        await kycSession.login();
         console.log("Hurray");
       }
     });

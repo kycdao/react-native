@@ -1,21 +1,6 @@
-import { NativeModules, Platform } from 'react-native';
-import type { SmartContractConfig, Network, SimplifiedVerificationStatus, KYCSessionInterface } from  "./KYCModels";
+import { RNKYCManager } from './../RNKYCManager';
+import type { SmartContractConfig, Network, SimplifiedVerificationStatus, KYCSessionInterface, WalletSessionInterface } from  "./KYCModels";
 export type { Network } from "./KYCModels";
-
-const LINKING_ERROR =
-  `The package 'react-native-awesome-module' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo managed workflow\n';
-
-export const RNKYCManager = NativeModules.RNKYCManager  ? NativeModules.RNKYCManager  : new Proxy(
-    {},
-    {
-      get() {
-        throw new Error(LINKING_ERROR);
-      },
-    }
-  );
 
 export class KYCManager {
 
@@ -31,8 +16,8 @@ export class KYCManager {
     return KYCManager.instance;
   }
 
-  public async createSession(walletAddress: string, network: Network): Promise<KYCSession> {
-    var kycSessionData = await RNKYCManager.createSession(walletAddress, network) as KYCSessionInterface;
+  public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<KYCSession> {
+    var kycSessionData = await RNKYCManager.createSession(walletAddress, walletSession) as KYCSessionInterface;
     if (kycSessionData !== undefined) {
       return new KYCSession(kycSessionData.id, 
                             kycSessionData.walletAddress,
@@ -46,6 +31,7 @@ export class KYCManager {
                             kycSessionData.legalEntityStatus,
                             kycSessionData.requiredInformationProvided,
                             kycSessionData.verificationStatus,
+                            walletSession,
                             kycSessionData.kycConfig,
                             kycSessionData.accreditedConfig,
                             kycSessionData.emailAddress,
@@ -75,6 +61,7 @@ export class KYCSession {
   legalEntityStatus: boolean;
   requiredInformationProvided: boolean;
   verificationStatus: SimplifiedVerificationStatus;
+  walletSession: WalletSessionInterface;
 
   constructor(
     id: string,
@@ -89,6 +76,7 @@ export class KYCSession {
     legalEntityStatus: boolean, 
     requiredInformationProvided: boolean, 
     verificationStatus: SimplifiedVerificationStatus,
+    walletSession: WalletSessionInterface,
     kycConfig?: SmartContractConfig,
     accreditedConfig?: SmartContractConfig,
     emailAddress?: string,
@@ -110,11 +98,12 @@ export class KYCSession {
     this.legalEntityStatus = legalEntityStatus
     this.requiredInformationProvided = requiredInformationProvided
     this.verificationStatus = verificationStatus
+    this.walletSession = walletSession
   }
 
-  public login(signature: string): Promise<void> {
+  public login(): Promise<void> {
     console.log("started login");
-    return RNKYCManager.login(this, signature);
+    return RNKYCManager.login(this);
   }
 
 }
