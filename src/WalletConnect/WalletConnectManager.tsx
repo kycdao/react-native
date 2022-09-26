@@ -39,7 +39,6 @@ export class WalletConnectManager {
                 var walletSession = new WalletSession(walletSessionData.id,
                                                       walletSessionData.url, 
                                                       walletSessionData.chainId,
-                                                      walletSessionData.network,
                                                       walletSessionData.walletId,
                                                       walletSessionData.accounts,
                                                       walletSessionData.icon,
@@ -62,7 +61,7 @@ export class WalletConnectManager {
     }
 
     public connect(wallet: Wallet): Promise<void> {
-        return RNWalletConnectManager.connect(wallet);
+        return RNWalletConnectManager.connect({ ...wallet });
     }
 
 }
@@ -94,14 +93,13 @@ export class WalletSession extends BaseWalletSession {
     constructor(
         id: string,
         url: WCURL,  
-        chainId: number,
-        network: Network,
+        chainId: string,
         walletId?: string, 
         accounts?: [string], 
         icon?: string, 
         name?: string
     ) {
-        super(id, chainId, network);
+        super(id, chainId);
         this.url = url;
         this.walletId = walletId;
         this.accounts = accounts;
@@ -112,7 +110,7 @@ export class WalletSession extends BaseWalletSession {
     personalSign(walletAddress: string, message: string): Promise<string> {
         console.log(walletAddress);
         console.log(message);
-        return RNWalletConnectManager.sign(this, walletAddress, message);
+        return RNWalletConnectManager.sign({ ...this }, walletAddress, message);
     }
     
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string> {

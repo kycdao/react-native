@@ -23,7 +23,6 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     var icon: URL?
     var name: String
     var chainId: String
-    var network: Network
     
     internal var personalSignHandler: ((String, String) -> Void)?
     internal var sendMintingTransactionHandler: ((String, MintingProperties) -> Void)?
@@ -64,7 +63,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         case network
     }
     
-    init(id: String, url: RNWCURL, walletId: String?, accounts: [String], icon: URL?, name: String, chainId: String, network: Network) {
+    init(id: String, url: RNWCURL, walletId: String?, accounts: [String], icon: URL?, name: String, chainId: String) {
         self.id = id
         self.url = url
         self.walletId = walletId
@@ -72,7 +71,6 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         self.icon = icon
         self.name = name
         self.chainId = chainId
-        self.network = network
     }
     
     public required init(from decoder: Decoder) throws {
@@ -84,7 +82,6 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         self.icon = try container.decodeIfPresent(URL.self, forKey: .icon)
         self.name = try container.decode(String.self, forKey: .name)
         self.chainId = try container.decode(String.self, forKey: .chainId)
-        self.network = try container.decode(Network.self, forKey: .network)
     }
     
     func encode(to encoder: Encoder) throws {
@@ -96,7 +93,6 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         try container.encodeIfPresent(self.icon, forKey: .icon)
         try container.encode(self.name, forKey: .name)
         try container.encode(self.chainId, forKey: .chainId)
-        try container.encode(self.network, forKey: .network)
     }
 }
 
@@ -111,7 +107,7 @@ struct RNWCURL: Codable {
 struct RNKYCSession: Codable {
     var id: String
     var walletAddress: String
-    var network: String
+    var chainId: String
     var kycConfig: RNSmartContractConfig?
     var accreditedConfig: RNSmartContractConfig?
     var loginProof: String

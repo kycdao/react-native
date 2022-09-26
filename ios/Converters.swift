@@ -17,8 +17,7 @@ extension WalletSession {
                         accounts: accounts,
                         icon: icon,
                         name: name,
-                        chainId: chainId,
-                        network: network)
+                        chainId: chainId)
     }
 }
 
@@ -37,7 +36,7 @@ extension SmartContractConfig {
         RNSmartContractConfig(address: address,
                               paymentDiscountPercent: paymentDiscountPercent,
                               verificationType: verificationType,
-                              network: network.caip2Id)
+                              network: network)
     }
 }
 
@@ -45,7 +44,7 @@ extension KYCSession {
     var asReactModel: RNKYCSession {
         RNKYCSession(id: self.id,
                      walletAddress: self.walletAddress,
-                     network: self.network.caip2Id,
+                     chainId: self.chainId,
                      kycConfig: self.kycConfig?.asReactModel,
                      accreditedConfig: self.accreditedConfig?.asReactModel,
                      loginProof: self.loginProof,

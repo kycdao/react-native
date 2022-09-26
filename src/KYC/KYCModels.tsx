@@ -2,7 +2,7 @@
 export interface KYCSessionInterface {
     id: string;
     walletAddress: string;
-    network: Network;
+    chainId: string;
     kycConfig?: SmartContractConfig;
     accreditedConfig?: SmartContractConfig;
     loginProof: string;
@@ -53,8 +53,7 @@ export interface MintingProperties {
 
 export interface WalletSessionInterface {
     id: string;
-    chainId: number;
-    network: Network;
+    chainId: string;
 
     personalSign(walletAddress: string, message: string): Promise<string>;
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;

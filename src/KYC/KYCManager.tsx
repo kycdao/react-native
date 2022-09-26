@@ -17,11 +17,11 @@ export class KYCManager {
   }
 
   public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<KYCSession> {
-    var kycSessionData = await RNKYCManager.createSession(walletAddress, walletSession) as KYCSessionInterface;
+    var kycSessionData = await RNKYCManager.createSession(walletAddress, { ...walletSession }) as KYCSessionInterface;
     if (kycSessionData !== undefined) {
       return new KYCSession(kycSessionData.id, 
                             kycSessionData.walletAddress,
-                            kycSessionData.network,
+                            kycSessionData.chainId,
                             kycSessionData.loginProof,
                             kycSessionData.isLoggedIn,
                             kycSessionData.emailConfirmed,
@@ -47,7 +47,7 @@ export class KYCSession {
 
   id: string;
   walletAddress: string;
-  network: Network;
+  chainId: string;
   kycConfig?: SmartContractConfig;
   accreditedConfig?: SmartContractConfig;
   loginProof: string;
@@ -66,7 +66,7 @@ export class KYCSession {
   constructor(
     id: string,
     walletAddress: string,
-    network: Network,
+    chainId: string,
     loginProof: string,
     isLoggedIn: boolean,
     emailConfirmed: boolean, 
@@ -84,7 +84,7 @@ export class KYCSession {
   ) {
     this.id = id
     this.walletAddress = walletAddress
-    this.network = network
+    this.chainId = chainId
     this.kycConfig = kycConfig
     this.accreditedConfig = accreditedConfig
     this.loginProof = loginProof
@@ -102,8 +102,11 @@ export class KYCSession {
   }
 
   public async login() {
-    console.log("started login");
-    await RNKYCManager.login(this);
+    /***
+     * By not sending `this` directly, but a copy, we avoid the react native bridge locking on our javascript object. 
+     * The locking would result in the object becoming immutable, which prevents syncing session data with the native layer
+     ***/
+    await RNKYCManager.login({ ...this });
     await this.syncSessionData();
   }
 
@@ -111,13 +114,16 @@ export class KYCSession {
 
     try {
       
-      var sessionDataUpdate = await RNKYCManager.freshSessionData(this) as KYCSessionInterface;
+      var sessionDataUpdate = await RNKYCManager.freshSessionData({ ...this}) as KYCSessionInterface;
+
+      console.log("Fresh session data");
+      console.log(sessionDataUpdate);
 
       if (sessionDataUpdate !== undefined) {
 
         this.id = sessionDataUpdate.id;
         this.walletAddress = sessionDataUpdate.walletAddress;
-        this.network = sessionDataUpdate.network;
+        this.chainId = sessionDataUpdate.chainId;
         this.kycConfig = sessionDataUpdate.kycConfig;
         this.accreditedConfig = sessionDataUpdate.accreditedConfig;
         this.loginProof = sessionDataUpdate.loginProof;

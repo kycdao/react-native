@@ -13,18 +13,15 @@ import { RNKYCManager } from "./../RNKYCManager";
 export abstract class BaseWalletSession implements WalletSessionInterface {
 
     id: string;
-    chainId: number;
-    network: Network;
+    chainId: string;
     private personalSignListener: EventSubscription;
     private mintingTransactionListener: EventSubscription;
 
     constructor(id: string,
-                chainId: number,
-                network: Network
+                chainId: string
     ) {
         this.id = id;
         this.chainId = chainId;
-        this.network = network;
 
         var eventEmitter = new NativeEventEmitter(RNKYCManager);
 
@@ -33,10 +30,10 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
             if (personalSignParams !== undefined && personalSignParams.id == this.id) {
                 try {
                     var signature = await this.personalSign(personalSignParams.walletAddress, personalSignParams.message);
-                    RNKYCManager.personalSignSuccess(this, signature);
+                    RNKYCManager.personalSignSuccess({ ...this }, signature);
                 } catch (error) {
                     console.error(error);
-                    RNKYCManager.personalSignFailure(this, error);
+                    RNKYCManager.personalSignFailure({ ...this }, error);
                 }
                 
             }
@@ -47,10 +44,10 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
             if (personalSignParams !== undefined && personalSignParams.id == this.id) {
                 try {
                     var txHash = await this.sendMintingTransaction(personalSignParams.walletAddress, personalSignParams.mintingProperties);
-                    RNKYCManager.mintingTransactionSuccess(this, txHash);
+                    RNKYCManager.mintingTransactionSuccess({ ...this }, txHash);
                 } catch (error) {
                     console.error(error);
-                    RNKYCManager.mintingTransactionFailure(this, error);
+                    RNKYCManager.mintingTransactionFailure({ ...this }, error);
                 }
             }
         });
