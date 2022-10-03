@@ -15,13 +15,7 @@ export interface KYCSessionInterface {
     disclaimerAccepted: boolean;
     legalEntityStatus: boolean;
     requiredInformationProvided: boolean;
-    verificationStatus: SimplifiedVerificationStatus;
-}
-  
-export enum SimplifiedVerificationStatus {
-    Verified,
-    Processing,
-    NotVerified
+    verificationStatus: VerificationStatus;
 }
   
 export interface SmartContractConfig {
@@ -42,6 +36,17 @@ export enum KycReactEvents {
     WCSessionStarted = "WC_SESSION_STARTED",
     MethodPersonalSign = "METHOD_PERSONAL_SIGN",
     MethodMintingTransaction = "METHOD_MINTING_TRANSACTION"
+}
+
+export enum IdentityFlowResult {
+    Completed = "COMPLETED",
+    Cancelled = "CANCELLED"
+}
+
+export enum VerificationStatus {
+    Verified = "VERIFIED",
+    Processing = "PROCESSING",
+    NotVerified = "NOT_VERIFIED"
 }
 
 export interface MintingProperties {
@@ -69,4 +74,24 @@ export interface MethodMintingTransactionParams {
     id: string;
     walletAddress: string;
     mintingProperties: MintingProperties;
+}
+
+export interface TokenImage {
+    id: string;
+    url?: string;
+}
+
+export interface GasEstimation {
+    price: string;
+    amount: string;
+    gasCurrency: CurrencyData;
+    fee: string;
+    feeInNative: string;
+}
+
+export interface CurrencyData {
+    name: string;
+    symbol: string;
+    decimals: number;
+    baseToNativeDivisor: string;
 }

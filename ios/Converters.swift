@@ -57,6 +57,56 @@ extension KYCSession {
                      disclaimerAccepted: self.disclaimerAccepted,
                      legalEntityStatus: self.legalEntityStatus,
                      requiredInformationProvided: self.residencyProvided,
-                     verificationStatus: self.verificationStatus)
+                     verificationStatus: self.verificationStatus.asReactModel)
+    }
+}
+
+extension IdentityFlowResult {
+    var asReactModel: String {
+        switch self {
+        case .completed:
+            return "COMPLETED"
+        case .cancelled:
+            return "CANCELLED"
+        }
+    }
+}
+
+extension GasEstimation {
+    var asReactModel: RNGasEstimation {
+        RNGasEstimation(price: price,
+                        amount: amount,
+                        gasCurrency: gasCurrency.asReactModel,
+                        fee: fee,
+                        feeInNative: feeInNative)
+    }
+}
+
+extension CurrencyData {
+    var asReactModel: RNCurrencyData {
+        RNCurrencyData(name: name,
+                       symbol: symbol,
+                       decimals: decimals,
+                       baseToNativeDivisor: baseToNativeDivisor)
+    }
+}
+
+extension TokenImage {
+    var asReactModel: RNTokenImage {
+        RNTokenImage(id: id,
+                     url: url)
+    }
+}
+
+extension VerificationStatus {
+    var asReactModel: RNVerificationStatus {
+        switch self {
+        case .verified:
+            return .verified
+        case .processing:
+            return .processing
+        case .notVerified:
+            return .notVerified
+        }
     }
 }

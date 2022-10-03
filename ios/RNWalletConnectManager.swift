@@ -99,11 +99,7 @@ class RNWalletConnectManager: RCTEventEmitter {
         Task {
             do {
                 
-                let rnSession = try RNWalletSession.decode(from: sessionData)
-                guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString }) else {
-                    throw KYCError.genericError
-                }
-                
+                let session = try await fetchSessionFromData(sessionData)
                 let signature = try await session.personalSign(walletAddress: account, message: message)
                 resolve(signature)
                 
@@ -116,8 +112,38 @@ class RNWalletConnectManager: RCTEventEmitter {
         }
     }
     
+    @objc(sendMintingTransaction:walletAddress:mintingProperties:resolve:reject:)
+    func sendMintingTransaction(_ sessionData: [String: Any], walletAddress: String, mintingProperties mintingPropertiesData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                
+                let session = try await fetchSessionFromData(sessionData)
+                
+                guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData) else { throw KYCError.genericError }
+                
+                let txHash = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
+                print("BRIDGE: Minting hash \(txHash)")
+                resolve(txHash)
+                
+            } catch let error {
+                reject("sendMintingTransaction", "Failed to mint NFT", error)
+            }
+        }
+    }
+    
     @objc override static func requiresMainQueueSetup() -> Bool {
         return true
+    }
+    
+    private func fetchSessionFromData(_ sessionData: [String: Any]) async throws -> WalletSession {
+        
+        let rnSession = try RNWalletSession.decode(from: sessionData)
+        guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString }) else {
+            throw KYCError.genericError
+        }
+        
+        return session
+        
     }
     
 }

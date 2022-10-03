@@ -1,6 +1,7 @@
 import { RNKYCManager } from './../RNKYCManager';
-import type { SmartContractConfig, Network, SimplifiedVerificationStatus, KYCSessionInterface, WalletSessionInterface } from  "./KYCModels";
+import type { SmartContractConfig, Network, VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage } from  "./KYCModels";
 export type { Network } from "./KYCModels";
+export { IdentityFlowResult, VerificationStatus } from "./KYCModels";
 
 export class KYCManager {
 
@@ -60,7 +61,7 @@ export class KYCSession {
   disclaimerAccepted: boolean;
   legalEntityStatus: boolean;
   requiredInformationProvided: boolean;
-  verificationStatus: SimplifiedVerificationStatus;
+  verificationStatus: VerificationStatus;
   walletSession: WalletSessionInterface;
 
   constructor(
@@ -75,7 +76,7 @@ export class KYCSession {
     disclaimerAccepted: boolean, 
     legalEntityStatus: boolean, 
     requiredInformationProvided: boolean, 
-    verificationStatus: SimplifiedVerificationStatus,
+    verificationStatus: VerificationStatus,
     walletSession: WalletSessionInterface,
     kycConfig?: SmartContractConfig,
     accreditedConfig?: SmartContractConfig,
@@ -108,6 +109,46 @@ export class KYCSession {
      ***/
     await RNKYCManager.login({ ...this });
     await this.syncSessionData();
+  }
+
+  public async acceptDisclaimer() {
+    await RNKYCManager.acceptDisclaimer({ ...this });
+  }
+
+  public async updateUser(email: string, residency: string, legalEntity: boolean) {
+    await RNKYCManager.updateUser({ ...this }, email, residency, legalEntity);
+  }
+
+  public async sendConfirmationEmail() {
+    await RNKYCManager.sendConfirmationEmail({ ...this });
+  }
+
+  public async continueWhenEmailConfirmed() {
+    await RNKYCManager.continueWhenEmailConfirmed({ ...this });
+  }
+
+  public async startIdentification(): Promise<IdentityFlowResult> {
+    return await RNKYCManager.startIdentification({ ...this });
+  }
+
+  public async continueWhenIdentified() {
+    await RNKYCManager.continueWhenIdentified({ ...this });
+  }
+
+  public async getNFTImages(): Promise<[TokenImage]> {
+    return await RNKYCManager.getNFTImages({ ...this });
+  }
+
+  public async estimateGasForMinting(): Promise<GasEstimation> {
+    return await RNKYCManager.estimateGasForMinting({ ...this });
+  }
+
+  public async requestMinting(selectedImageId: string) {
+    await RNKYCManager.requestMinting({ ...this }, selectedImageId);
+  }
+
+  public async mint() {
+    await RNKYCManager.mint({ ...this });
   }
 
   private async syncSessionData() {

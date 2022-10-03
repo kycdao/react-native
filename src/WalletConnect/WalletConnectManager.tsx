@@ -114,7 +114,10 @@ export class WalletSession extends BaseWalletSession {
     }
     
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string> {
-        throw new Error('Method not implemented.');
+        console.log(mintingProperties);
+        console.log("REACT: send Minting Tx: ");
+        // return RNWalletConnectManager.sign({ ...this }, walletAddress, "anyad");
+        return RNWalletConnectManager.sendMintingTransaction({ ...this }, walletAddress, mintingProperties);
     }
 
     public test() {

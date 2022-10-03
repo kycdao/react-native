@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text, NativeEventEmitter, Button } from 'react-native';
-import { launchKycFlow, multiply, printStuff, WalletConnectManager, WalletSession, KYCManager } from 'kycdao-mobile';
+import { launchKycFlow, multiply, printStuff, WalletConnectManager, WalletSession, KYCManager, IdentityFlowResult, VerificationStatus } from 'kycdao-mobile';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
@@ -17,8 +17,48 @@ export default function App() {
       var kycManager = KYCManager.getInstance();
       var kycSession = await kycManager.createSession(walletSession.accounts[0]!, walletSession);
       console.log(kycSession);
-      await kycSession.login();
-      console.log("Hurray");
+      
+      if (kycSession.isLoggedIn == false) {
+        await kycSession.login();
+        console.log("REACT DEBUG: LOGIN");
+      }
+
+      if (kycSession.requiredInformationProvided == false) {
+        await kycSession.acceptDisclaimer();
+        console.log("REACT DEBUG: ACCEPT DISCLAIMER");
+        await kycSession.updateUser("robin+kyc@bitraptors.com", "HU", false);
+        console.log("REACT DEBUG: UPDATE USER");
+      }
+      
+      if (kycSession.emailConfirmed == false) {
+        await kycSession.sendConfirmationEmail();
+        console.log("REACT DEBUG: SEND CONFIRM EMAIL");
+        await kycSession.continueWhenEmailConfirmed();
+        console.log("REACT DEBUG: CONTINUE WHEN EMAIL CONFIRMED");
+      }
+
+      if (kycSession.verificationStatus == VerificationStatus.NotVerified) {
+        let identificationStatus = await kycSession.startIdentification();
+        console.log("REACT DEBUG: startIdentification");
+        if (identificationStatus == IdentityFlowResult.Completed) {
+          await kycSession.continueWhenIdentified();
+          console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
+        } else {
+          console.log("REACT DEBUG: Identity flow cancelled!");
+          return
+        }
+      } else if (kycSession.verificationStatus == VerificationStatus.Processing) {
+        await kycSession.continueWhenIdentified();
+        console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
+      }
+      
+      let images = await kycSession.getNFTImages();
+      console.log("REACT DEBUG: GOT IMAGES " + images);
+      await kycSession.requestMinting(images[0].id);
+      console.log("REACT DEBUG: GOT MINTING AUTH");
+      await kycSession.mint();
+      console.log("REACT DEBUG: Hurray");
+
     });
 
     return function cleanup() { 

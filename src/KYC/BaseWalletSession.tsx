@@ -40,12 +40,19 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
         });
 
         this.mintingTransactionListener = eventEmitter.addListener(KycReactEvents.MethodMintingTransaction, async event => {
-            var personalSignParams = event as MethodMintingTransactionParams;
-            if (personalSignParams !== undefined && personalSignParams.id == this.id) {
+            console.log(event);
+            var mintingTransactionParams = event as MethodMintingTransactionParams;
+            if (mintingTransactionParams !== undefined && mintingTransactionParams.id == this.id) {
                 try {
-                    var txHash = await this.sendMintingTransaction(personalSignParams.walletAddress, personalSignParams.mintingProperties);
+                    console.log(mintingTransactionParams);
+                    console.log(mintingTransactionParams.mintingProperties);
+                    var txHash = await this.sendMintingTransaction(mintingTransactionParams.walletAddress, mintingTransactionParams.mintingProperties);
+                    console.log("TxHash");
+                    console.log(txHash);
+                    console.error("Success");
                     RNKYCManager.mintingTransactionSuccess({ ...this }, txHash);
                 } catch (error) {
+                    console.log("Ran into error");
                     console.error(error);
                     RNKYCManager.mintingTransactionFailure({ ...this }, error);
                 }

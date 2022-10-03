@@ -8,6 +8,7 @@
 import Foundation
 import KycDao
 import WalletConnectSwift
+import BigInt
 
 enum KycReactEvents: String, Codable {
     case wcSessionStarted = "WC_SESSION_STARTED"
@@ -120,7 +121,7 @@ struct RNKYCSession: Codable {
     var disclaimerAccepted: Bool
     var legalEntityStatus: Bool
     var requiredInformationProvided: Bool
-    var verificationStatus: SimplifiedVerificationStatus
+    var verificationStatus: RNVerificationStatus
 }
 
 struct RNSmartContractConfig: Codable {
@@ -128,4 +129,32 @@ struct RNSmartContractConfig: Codable {
     let paymentDiscountPercent: Int
     let verificationType: VerificationType
     let network: String
+}
+
+public struct RNGasEstimation: Codable {
+    
+    public let price: BigUInt
+    public let amount: BigUInt
+    public let gasCurrency: RNCurrencyData
+    public var fee: BigUInt
+    public var feeInNative: String
+    
+}
+
+public struct RNCurrencyData: Codable {
+    public let name: String
+    public let symbol: String
+    public let decimals: Int
+    public var baseToNativeDivisor: BigUInt
+}
+
+public struct RNTokenImage: Codable {
+    public let id: String
+    public let url: URL?
+}
+
+public enum RNVerificationStatus: String, Codable {
+    case verified = "VERIFIED"
+    case processing = "PROCESSING"
+    case notVerified = "NOT_VERIFIED"
 }
