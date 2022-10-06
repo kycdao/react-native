@@ -73,23 +73,6 @@ export class WalletSession extends BaseWalletSession {
     icon?: string;
     name?: string;
 
-    // public get network(): Network | undefined {
-    //     console.log("network from chainId");
-    //     console.log(this.chainId);
-    //     switch (this.chainId) {
-    //         case 1:
-    //             return Network.EthereumMainnet;
-    //         case 42220:
-    //             return Network.CeloMainnet;
-    //         case 44787:
-    //             return Network.CeloAlfajores;
-    //         case 80001:
-    //             return Network.PolygonMumbai;
-    //         default:
-    //             return undefined;
-    //     }
-    // }
-
     constructor(
         id: string,
         url: WCURL,  
