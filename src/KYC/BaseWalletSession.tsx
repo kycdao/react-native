@@ -1,8 +1,7 @@
 
 import { EventSubscription, NativeEventEmitter } from "react-native";
 import { 
-    WalletSessionInterface, 
-    Network, 
+    WalletSessionInterface,
     KycReactEvents, 
     MethodMintingTransactionParams, 
     MethodPersonalSignParams,
@@ -63,5 +62,10 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
     abstract personalSign(walletAddress: string, message: string): Promise<string>;
     
     abstract sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
+
+    release() {
+        this.personalSignListener.remove()
+        this.mintingTransactionListener.remove()
+    }
 
 }

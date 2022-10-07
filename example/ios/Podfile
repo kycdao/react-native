@@ -16,7 +16,8 @@ target 'KycdaoMobileExample' do
   flags = get_default_flags()
 
   pod 'secp256k1.swift', :modular_headers => true
-  pod 'KycDao', :path => '~/Bitraptors/Projects/kyc-mobile-sdk'
+  pod 'KycDao', :path => '~/Bitraptors/Projects/kycdao-ios-sdk'
+  # pod 'kycdao-mobile', path => '~/Bitraptors/RelatedProjects/kycdao-mobile'
 
   use_react_native!(
     :path => config[:reactNativePath],

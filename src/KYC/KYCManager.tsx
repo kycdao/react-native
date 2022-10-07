@@ -1,5 +1,5 @@
 import { RNKYCManager } from './../RNKYCManager';
-import type { SmartContractConfig, Network, VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage } from  "./KYCModels";
+import type { SmartContractConfig, VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage } from  "./KYCModels";
 export type { Network } from "./KYCModels";
 export { IdentityFlowResult, VerificationStatus } from "./KYCModels";
 
@@ -115,8 +115,8 @@ export class KYCSession {
     await RNKYCManager.acceptDisclaimer({ ...this });
   }
 
-  public async updateUser(email: string, residency: string, legalEntity: boolean) {
-    await RNKYCManager.updateUser({ ...this }, email, residency, legalEntity);
+  public async savePersonalInfo(email: string, residency: string, legalEntity: boolean) {
+    await RNKYCManager.savePersonalInfo({ ...this }, email, residency, legalEntity);
   }
 
   public async sendConfirmationEmail() {

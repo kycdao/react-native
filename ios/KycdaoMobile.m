@@ -44,7 +44,7 @@ RCT_EXTERN_METHOD(acceptDisclaimer:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(updateUser:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(savePersonalInfo:(NSDictionary)sessionData
                   email:(NSString)email
                   residency:(NSString)residency
                   legalEntity:(BOOL)legalEntity

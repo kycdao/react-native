@@ -208,19 +208,19 @@ class RNKYCManager: RCTEventEmitter {
         }
     }
     
-    @objc(updateUser:email:residency:legalEntity:resolve:reject:)
-    func updateUser(_ sessionData: [String: Any],
-                    email: String,
-                    residency: String,
-                    legalEntity: Bool,
-                    resolve: @escaping RCTPromiseResolveBlock,
-                    reject: @escaping RCTPromiseRejectBlock
+    @objc(savePersonalInfo:email:residency:legalEntity:resolve:reject:)
+    func savePersonalInfo(_ sessionData: [String: Any],
+                          email: String,
+                          residency: String,
+                          legalEntity: Bool,
+                          resolve: @escaping RCTPromiseResolveBlock,
+                          reject: @escaping RCTPromiseRejectBlock
     ) {
         Task {
             do {
                 
                 let session = try fetchSessionFromData(sessionData)
-                try await session.updateUser(email: email, residency: residency, legalEntity: legalEntity)
+                try await session.savePersonalInfo(email: email, residency: residency, legalEntity: legalEntity)
                 resolve(())
                 
             } catch let error {

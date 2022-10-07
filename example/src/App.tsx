@@ -26,7 +26,7 @@ export default function App() {
       if (kycSession.requiredInformationProvided == false) {
         await kycSession.acceptDisclaimer();
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
-        await kycSession.updateUser("robin+kyc@bitraptors.com", "HU", false);
+        await kycSession.savePersonalInfo("robin+kyc@bitraptors.com", "HU", false);
         console.log("REACT DEBUG: UPDATE USER");
       }
       

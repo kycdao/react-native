@@ -1,6 +1,6 @@
 import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import type { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
-import { Network, KycReactEvents, MintingProperties } from "./../KYC/KYCModels";
+import { KycReactEvents, MintingProperties } from "./../KYC/KYCModels";
 import { BaseWalletSession } from './../KYC/BaseWalletSession';
 
 const LINKING_ERROR =
