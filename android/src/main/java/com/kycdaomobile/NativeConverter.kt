@@ -2,46 +2,130 @@ package com.kycdaomobile
 
 import com.facebook.react.bridge.*
 import com.google.gson.Gson
+import com.kycdaomobile.extensions.parse
+import com.kycdaomobile.extensions.toJson
+import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
-fun <T> Dynamic.toObject(classOfT : Class<T>) : T {
-    val data = asMap().toHashMap()
-    val gson = Gson()
-    return gson.fromJson(gson.toJson(data), classOfT)
+fun List<Any>.toWritableArray(): WritableArray {
+    val writableArray = WritableNativeArray()
+    forEach { writableArray.pushMap(it.toWritableMap()) }
+    return writableArray
 }
 
-fun List<Any>.toNativeArray() : WritableArray {
-    val gson = Gson()
+fun Any.toWritableMap(): WritableMap {
+    return convertJsonToMap(JSONObject(toJson()))
+}
+
+fun <T> ReadableMap.parse(classOfT: Class<T>): T {
+    return convertMapToJson(this)!!.toString().parse(classOfT)
+}
+
+fun <T> ReadableArray.parse(classOfT: Class<T>): List<T> {
+    return toArrayList().map { it.toJson().parse(classOfT) }
+}
+
+@Throws(JSONException::class)
+private fun convertJsonToMap(jsonObject: JSONObject): WritableMap {
+    val map: WritableMap = WritableNativeMap()
+    val iterator = jsonObject.keys()
+    while (iterator.hasNext()) {
+        val key = iterator.next()
+        when (val value = jsonObject[key]) {
+            is JSONObject -> {
+                map.putMap(key, convertJsonToMap(value))
+            }
+            is JSONArray -> {
+                map.putArray(key, convertJsonToArray(value))
+            }
+            is Boolean -> {
+                map.putBoolean(key, value)
+            }
+            is Int -> {
+                map.putInt(key, value)
+            }
+            is Double -> {
+                map.putDouble(key, value)
+            }
+            is String -> {
+                map.putString(key, value)
+            }
+            else -> {
+                map.putString(key, value.toString())
+            }
+        }
+    }
+    return map
+}
+
+@Throws(JSONException::class)
+private fun convertJsonToArray(jsonArray: JSONArray): WritableArray {
     val array: WritableArray = WritableNativeArray()
-    for (item in this) {
-        array.pushMap(item.toNativeMap(gson))
+    for (i in 0 until jsonArray.length()) {
+        when (val value = jsonArray[i]) {
+            is JSONObject -> {
+                array.pushMap(convertJsonToMap(value))
+            }
+            is JSONArray -> {
+                array.pushArray(convertJsonToArray(value))
+            }
+            is Boolean -> {
+                array.pushBoolean(value)
+            }
+            is Int -> {
+                array.pushInt(value)
+            }
+            is Double -> {
+                array.pushDouble(value)
+            }
+            is String -> {
+                array.pushString(value)
+            }
+            else -> {
+                array.pushString(value.toString())
+            }
+        }
     }
     return array
 }
 
-fun Any.toNativeMap(gson: Gson = Gson()) : WritableMap {
-    return JSONObject(gson.toJson(this)).toNativeMap()
-}
-
-fun JSONObject.toNativeMap() : WritableMap {
-    val map: WritableMap = WritableNativeMap()
-    val iterator = keys()
-    while (iterator.hasNext()) {
-        val key = iterator.next()
-        val value = this[key]
-        if (value is JSONObject) {
-            map.putMap(key, value.toNativeMap())
-        } else if (value is Boolean) {
-            map.putBoolean(key, value)
-        } else if (value is Int) {
-            map.putInt(key, value)
-        } else if (value is Double) {
-            map.putDouble(key, value)
-        } else if (value is String) {
-            map.putString(key, value)
-        } else {
-            map.putString(key, value.toString())
+@Throws(JSONException::class)
+private fun convertMapToJson(readableMap: ReadableMap?): JSONObject? {
+    if (readableMap == null) {
+        return null
+    }
+    val jsonObject = JSONObject()
+    val iterator = readableMap.keySetIterator()
+    while (iterator.hasNextKey()) {
+        val key = iterator.nextKey()
+        when (readableMap.getType(key)) {
+            ReadableType.Null -> jsonObject.put(key, JSONObject.NULL)
+            ReadableType.Boolean -> jsonObject.put(key, readableMap.getBoolean(key))
+            ReadableType.Number -> jsonObject.put(key, readableMap.getDouble(key))
+            ReadableType.String -> jsonObject.put(key, readableMap.getString(key))
+            ReadableType.Map -> jsonObject.put(key, convertMapToJson(readableMap.getMap(key)))
+            ReadableType.Array -> jsonObject.put(key, convertArrayToJson(readableMap.getArray(key)))
         }
     }
-    return map
+    return jsonObject
+}
+
+@Throws(JSONException::class)
+private fun convertArrayToJson(readableArray: ReadableArray?): JSONArray? {
+    if (readableArray == null) {
+        return null
+    }
+    val array = JSONArray()
+    for (i in 0 until readableArray.size()) {
+        when (readableArray.getType(i)) {
+            ReadableType.Null -> Unit
+            ReadableType.Boolean -> array.put(readableArray.getBoolean(i))
+            ReadableType.Number -> array.put(readableArray.getDouble(i))
+            ReadableType.String -> array.put(readableArray.getString(i))
+            ReadableType.Map -> array.put(convertMapToJson(readableArray.getMap(i)))
+            ReadableType.Array -> array.put(convertArrayToJson(readableArray.getArray(i)))
+        }
+    }
+    return array
 }

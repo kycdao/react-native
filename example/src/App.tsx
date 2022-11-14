@@ -1,7 +1,8 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text, NativeEventEmitter, Button } from 'react-native';
-import { launchKycFlow, multiply, printStuff, WalletConnectManager, WalletSession, KYCManager, IdentityFlowResult, VerificationStatus } from 'kycdao-mobile';
+import { launchKycFlow, multiply, printStuff, WalletConnectManager, WalletSession, KYCManager, IdentityFlowResult, VerificationStatus, PersonalData } from 'kycdao-mobile';
+
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
@@ -17,46 +18,67 @@ export default function App() {
       var kycManager = KYCManager.getInstance();
       var kycSession = await kycManager.createSession(walletSession.accounts[0]!, walletSession);
       console.log(kycSession);
-      
-      if (kycSession.isLoggedIn == false) {
+      console.log("KYCSESSION CREATED");
+
+      if (kycSession.loggedIn == false) {
         await kycSession.login();
-        console.log("REACT DEBUG: LOGIN");
+        console.log("REACT DEBUG: LOGING  IN");
+
       }
+      console.log("REACT DEBUG: LOGGED IN");
+
 
       if (kycSession.requiredInformationProvided == false) {
         await kycSession.acceptDisclaimer();
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
-        await kycSession.savePersonalInfo("robin+kyc@bitraptors.com", "HU", false);
+        var personalData = new PersonalData(
+          "adam@bitraptors.com", "HU", false
+        )
+        await kycSession.setPersonalData(personalData);
         console.log("REACT DEBUG: UPDATE USER");
       }
-      
+      console.log("REACT DEBUG: REQUIRED INFORMATION AVAILABLE");
+
       if (kycSession.emailConfirmed == false) {
         await kycSession.sendConfirmationEmail();
         console.log("REACT DEBUG: SEND CONFIRM EMAIL");
         await kycSession.continueWhenEmailConfirmed();
         console.log("REACT DEBUG: CONTINUE WHEN EMAIL CONFIRMED");
       }
+      console.log("REACT DEBUG: EMAIL IS OK");
+      console.log(kycSession.verificationStatus);
+      console.log(kycSession.verificationStatus === VerificationStatus.NotVerified);
 
       if (kycSession.verificationStatus == VerificationStatus.NotVerified) {
+        console.log("REACT DEBUG: before identification");
         let identificationStatus = await kycSession.startIdentification();
         console.log("REACT DEBUG: startIdentification");
+        console.log("REACT DEBUG:" + identificationStatus)
+        console.log("REACT DEBUG:" + IdentityFlowResult.Completed)
+        console.log("REACT DEBUG:" + identificationStatus == IdentityFlowResult.Completed)
+
+
         if (identificationStatus == IdentityFlowResult.Completed) {
-          await kycSession.continueWhenIdentified();
+          await kycSession.resumeOnVerificationCompleted();
           console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
         } else {
           console.log("REACT DEBUG: Identity flow cancelled!");
           return
         }
-      } else if (kycSession.verificationStatus == VerificationStatus.Processing) {
-        await kycSession.continueWhenIdentified();
+      }
+      else if (kycSession.verificationStatus == VerificationStatus.Processing) {
+        await kycSession.resumeOnVerificationCompleted();
         console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
       }
-      
+      console.log("IT'S MINTING TIME")
       let images = await kycSession.getNFTImages();
       console.log("REACT DEBUG: GOT IMAGES " + images);
       await kycSession.requestMinting(images[0].id);
       console.log("REACT DEBUG: GOT MINTING AUTH");
-      await kycSession.mint();
+      var estimation = await kycSession.estimateGasForMinting()
+      console.log("REACT PRICE:"+estimation.feeInNative)
+      var uri = await kycSession.mint();
+      console.log("URI:"+uri)
       console.log("REACT DEBUG: Hurray");
 
     });

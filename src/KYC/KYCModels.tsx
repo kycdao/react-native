@@ -1,19 +1,12 @@
+/* eslint-disable */
 
 export interface KYCSessionInterface {
     id: string;
     walletAddress: string;
     chainId: string;
-    kycConfig?: SmartContractConfig;
-    accreditedConfig?: SmartContractConfig;
-    loginProof: string;
-    isLoggedIn: boolean;
-    emailAddress?: string;
+    loggedIn: boolean;
     emailConfirmed: boolean;
-    residency?: string;
-    residencyProvided: boolean;
-    emailProvided: boolean;
     disclaimerAccepted: boolean;
-    legalEntityStatus: boolean;
     requiredInformationProvided: boolean;
     verificationStatus: VerificationStatus;
 }
@@ -54,6 +47,22 @@ export interface MintingProperties {
     contractABI: string;
     gasAmount: string;
     gasPrice: string;
+}
+
+export class PersonalData{
+    email: string;
+    residency: string;
+    isLegalEntity : boolean;
+
+    constructor(
+        email: string,
+        residency: string,
+        isLegalEntity: boolean
+    ){
+        this.email = email
+        this.residency = residency
+        this.isLegalEntity = isLegalEntity
+    }
 }
 
 export interface WalletSessionInterface {

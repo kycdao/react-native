@@ -99,7 +99,6 @@ export class WalletSession extends BaseWalletSession {
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string> {
         console.log(mintingProperties);
         console.log("REACT: send Minting Tx: ");
-        // return RNWalletConnectManager.sign({ ...this }, walletAddress, "anyad");
         return RNWalletConnectManager.sendMintingTransaction({ ...this }, walletAddress, mintingProperties);
     }
 
