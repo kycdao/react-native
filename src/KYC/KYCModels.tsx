@@ -1,4 +1,3 @@
-/* eslint-disable */
 
 export interface KYCSessionInterface {
     id: string;
@@ -9,6 +8,11 @@ export interface KYCSessionInterface {
     disclaimerAccepted: boolean;
     requiredInformationProvided: boolean;
     verificationStatus: VerificationStatus;
+}
+
+export interface ErrorEventBody{
+    message: string;
+    errorType: ErrorType;
 }
   
 export interface SmartContractConfig {
@@ -27,8 +31,18 @@ export enum Network {
 
 export enum KycReactEvents {
     WCSessionStarted = "WC_SESSION_STARTED",
+    WCSessionFailed = "WC_SESSION_FAILED",
+    MethodHasValidToken ="METHOD_HAS_VALID_TOKEN",
     MethodPersonalSign = "METHOD_PERSONAL_SIGN",
     MethodMintingTransaction = "METHOD_MINTING_TRANSACTION"
+}
+
+export enum ErrorType{
+    FailedToConnectWalletConnect,
+}
+export enum VerificationType {
+    KYC = "KYC",
+    AccreditedInvestor = "AccreditedInvestor"
 }
 
 export enum IdentityFlowResult {
@@ -64,6 +78,19 @@ export class PersonalData{
         this.isLegalEntity = isLegalEntity
     }
 }
+export class NetworkOption{
+    chainId: string;
+    rpcURL?: string;
+    
+    constructor(
+        chainId: string,
+        rpcURL? : string
+    ){
+        this.chainId = chainId
+        this.rpcURL = rpcURL
+    }
+}
+
 
 export interface WalletSessionInterface {
     id: string;
@@ -71,6 +98,17 @@ export interface WalletSessionInterface {
 
     personalSign(walletAddress: string, message: string): Promise<string>;
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
+}
+
+export interface MethodHasValidTokenParams {
+    verificationType: VerificationType,
+    walletAddress: string,
+    networkOption: NetworkOption
+}
+export interface MethodHasValidTokenWalletSessionParams {
+    verificationType: VerificationType,
+    walletAddress: string,
+    walletSession: WalletSessionInterface
 }
 
 export interface MethodPersonalSignParams {

@@ -6,19 +6,17 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.kycdao.android.sdk.kycSession.KycManager
 import com.kycdao.android.sdk.kycSession.KycSession
 import com.kycdao.android.sdk.model.GasEstimation
-import com.kycdao.android.sdk.model.MintFunction
-import com.kycdao.android.sdk.model.MintingTransactionResult
+import com.kycdao.android.sdk.model.NetworkOption
 import com.kycdao.android.sdk.model.PersonalData
+import com.kycdao.android.sdk.model.VerificationType
+import com.kycdao.android.sdk.model.functions.mint.MintingTransactionResult
 import com.kycdaomobile.events.KycReactEvent
 import com.kycdaomobile.extensions.launch
 import com.kycdaomobile.extensions.toJson
 import com.kycdaomobile.extensions.toType
 import com.kycdaomobile.models.event_bodies.PersonalSignEventBody
-import com.kycdaomobile.models.react_model.ReactNativeWCWalletSession
 import com.kycdaomobile.models.event_bodies.SendMintingTransactionEventBody
-import com.kycdaomobile.models.react_model.RNKycSession
-import com.kycdaomobile.models.react_model.toReactModel
-import com.kycdaomobile.models.react_model.toReactNativeModel
+import com.kycdaomobile.models.react_model.*
 import com.kycdaomobile.toWritableArray
 import com.kycdaomobile.toWritableMap
 import com.kycdaomobile.wallet.ReactNativeWalletSessionImpl
@@ -26,7 +24,7 @@ import com.kycdaomobile.wallet.onPersonalSign
 import com.kycdaomobile.wallet.onSendMintingTransaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import java.lang.Exception
+import kotlin.Exception
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -83,6 +81,20 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 			promise.resolve(kycSession.toReactNativeModel().toWritableMap())
 		}
 	}
+
+	@ReactMethod
+	fun hasValidToken(hasTokenValidParams: ReadableMap,promise: Promise){
+		promise.launch(this){
+			val params = hasTokenValidParams.toType(RNMethodHasTokenParams::class.java)
+			val result = KycManager.hasValidToken(
+				params.verificationType,
+				params.walletAddress,
+				params.networkOption
+			)
+			promise.resolve(result)
+		}
+	}
+
 
 	@ReactMethod
 	fun login(sessionDataMap: ReadableMap, promise: Promise) {
@@ -159,7 +171,7 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 	fun freshSessionData(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
 			usingKycSessionFrom(sessionDataMap){
-				promise.resolve(this.toReactNativeModel())
+				promise.resolve(this.toReactNativeModel().toWritableMap())
 			}
 		}
 	}
@@ -198,7 +210,7 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 	fun resumeOnVerificationCompleted(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
 			usingKycSessionFrom(sessionDataMap){
-				resumeOnVerificationCompleted()
+				this.resumeWhenIdentified()
 				promise.resolve(null)
 			}
 		}

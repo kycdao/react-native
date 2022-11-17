@@ -1,5 +1,6 @@
 import { RNKYCManager } from './../RNKYCManager';
-import type { SmartContractConfig, VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage, PersonalData } from  "./KYCModels";
+import { RNWalletConnectManager } from './../WalletConnect/WalletConnectManager';
+import type { VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage, PersonalData, MethodHasValidTokenParams, MethodHasValidTokenWalletSessionParams } from  "./KYCModels";
 export type { Network } from "./KYCModels";
 export { IdentityFlowResult, VerificationStatus, PersonalData } from "./KYCModels";
 
@@ -33,6 +34,13 @@ export class KYCManager {
     }
     console.log("Native model of KYCSession does not match the TypeScript model");
     throw TypeError("Native model of KYCSession does not match the TypeScript model");
+  }
+
+  public async hasValidToken(params: MethodHasValidTokenParams) : Promise<boolean>{
+    return await RNKYCManager.hasValidToken(params)
+  }
+  public async hasValidTokenWalletSession(params: MethodHasValidTokenWalletSessionParams) : Promise<boolean>{
+    return await RNWalletConnectManager.hasValidTokenWalletSession(params)
   }
 
 }
@@ -109,7 +117,7 @@ export class KYCSession {
   }
 
   public async estimateGasForMinting(): Promise<GasEstimation> {
-    return await RNKYCManager.estimateGasForMinting({ ...this });
+    return await RNKYCManager.estimateGasForMinting({ ...this },3);
   }
 
   public async requestMinting(selectedImageId: string) {

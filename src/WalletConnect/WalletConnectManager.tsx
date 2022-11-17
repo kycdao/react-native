@@ -1,6 +1,6 @@
 import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import type { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
-import { KycReactEvents, MintingProperties } from "./../KYC/KYCModels";
+import { ErrorEventBody, KycReactEvents, MintingProperties } from "./../KYC/KYCModels";
 import { BaseWalletSession } from './../KYC/BaseWalletSession';
 
 const LINKING_ERROR =
@@ -9,7 +9,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-const RNWalletConnectManager = NativeModules.RNWalletConnectManager  ? NativeModules.RNWalletConnectManager  : new Proxy(
+export const RNWalletConnectManager = NativeModules.RNWalletConnectManager  ? NativeModules.RNWalletConnectManager  : new Proxy(
     {},
     {
       get() {
@@ -32,7 +32,7 @@ export class WalletConnectManager {
         return WalletConnectManager.instance;
     }
 
-    public addSessionStartListener(listener: (walletSession: WalletSession) => void): EmitterSubscription {
+    public onSessionSuccessfullyEstablished(listener: (walletSession: WalletSession) => void): EmitterSubscription {
         return this.getEventEmitter().addListener(KycReactEvents.WCSessionStarted, event => {
             var walletSessionData = event as WalletConnectSessionInterface
             if (walletSessionData !== undefined) {
@@ -45,15 +45,24 @@ export class WalletConnectManager {
                                                       walletSessionData.name);
                 listener(walletSession);
             }
-        });
+        })
+        ;
+    }
+
+    public onSessionFailed(listener: (error:ErrorEventBody) => void): EmitterSubscription {
+        return this.getEventEmitter().addListener(KycReactEvents.WCSessionFailed, event => {
+                var error = event as ErrorEventBody
+                listener(error);
+            })
+        ;
     }
 
     public getEventEmitter(): NativeEventEmitter {
         return new NativeEventEmitter(RNWalletConnectManager);
     }
 
-    public startListening(): Promise<string> {
-        return RNWalletConnectManager.startListening();
+    public startListening(){
+         RNWalletConnectManager.startListening();
     }
 
     public listWallets(): Promise<[Wallet]> {
@@ -62,6 +71,10 @@ export class WalletConnectManager {
 
     public connect(wallet: Wallet): Promise<void> {
         return RNWalletConnectManager.connect({ ...wallet });
+    }
+
+    public addCustomRpcURL(chainId: string, rpcURL: string){
+        RNWalletConnectManager.addCustomRpcURL(chainId, rpcURL)
     }
 
 }

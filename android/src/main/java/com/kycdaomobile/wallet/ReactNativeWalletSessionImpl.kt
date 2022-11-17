@@ -1,7 +1,7 @@
 package com.kycdaomobile.wallet
 
-import com.kycdao.android.sdk.model.MintingProperties
-import com.kycdao.android.sdk.model.MintingTransactionResult
+import com.kycdao.android.sdk.model.functions.mint.MintingProperties
+import com.kycdao.android.sdk.model.functions.mint.MintingTransactionResult
 import com.kycdao.android.sdk.wallet.WalletSession
 import com.kycdaomobile.models.react_model.ReactNativeWCURL
 import com.kycdaomobile.models.react_model.ReactNativeWCWalletSession
@@ -10,7 +10,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.Continuation
 
 typealias PersonalSignAction = ((String,String,String)->Unit)?
-typealias SendMintingTransactionAction = ((String,String,MintingProperties)->Unit)?
+typealias SendMintingTransactionAction = ((String, String, MintingProperties)->Unit)?
 class ReactNativeWalletSessionImpl private constructor(
 	override val id: String,
 	val url: ReactNativeWCURL,
@@ -24,7 +24,6 @@ class ReactNativeWalletSessionImpl private constructor(
 	companion object Builder {
 		fun createFromNativeModel(
 			data: ReactNativeWCWalletSession,
-
 			): ReactNativeWalletSessionImpl {
 			return ReactNativeWalletSessionImpl(
 				id = data.id,
@@ -41,6 +40,8 @@ class ReactNativeWalletSessionImpl private constructor(
 	var personalSignContinuation : Continuation<String>? = null
 	var sendMintingAction : SendMintingTransactionAction = null
 	var sendMintingContinuation : Continuation<MintingTransactionResult>? = null
+	override val rpcURL: String? = null
+
 	override fun getChainId(): String {
 		return chainID
 	}

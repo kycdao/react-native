@@ -1,11 +1,11 @@
 
 import { EventSubscription, NativeEventEmitter } from "react-native";
-import { 
+import {
     WalletSessionInterface,
-    KycReactEvents, 
-    MethodMintingTransactionParams, 
+    KycReactEvents,
+    MethodMintingTransactionParams,
     MethodPersonalSignParams,
-    MintingProperties 
+    MintingProperties,
 } from "./KYCModels";
 import { RNKYCManager } from "./../RNKYCManager";
 
@@ -17,7 +17,7 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
     private mintingTransactionListener: EventSubscription;
 
     constructor(id: string,
-                chainId: string
+        chainId: string
     ) {
         this.id = id;
         this.chainId = chainId;
@@ -34,7 +34,7 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
                     console.error(error);
                     RNKYCManager.personalSignFailure({ ...this }, error);
                 }
-                
+
             }
         });
 
@@ -60,7 +60,7 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
     }
 
     abstract personalSign(walletAddress: string, message: string): Promise<string>;
-    
+
     abstract sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
 
     release() {
