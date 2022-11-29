@@ -10,7 +10,7 @@ export interface KYCSessionInterface {
     verificationStatus: VerificationStatus;
 }
 
-export interface ErrorEventBody{
+export interface ErrorEventBody {
     message: string;
     errorType: ErrorType;
 }

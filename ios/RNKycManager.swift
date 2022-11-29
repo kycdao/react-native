@@ -11,8 +11,8 @@ import KycDao
 import Combine
 import UIKit
 
-extension KYCSession: Hashable, Equatable {
-    public static func == (lhs: KYCSession, rhs: KYCSession) -> Bool {
+extension VerificationSession: Hashable, Equatable {
+    public static func == (lhs: VerificationSession, rhs: VerificationSession) -> Bool {
         lhs.id == rhs.id
     }
     
@@ -21,10 +21,10 @@ extension KYCSession: Hashable, Equatable {
     }
 }
 
-@objc(RNKYCManager)
-class RNKYCManager: RCTEventEmitter {
+@objc(RNVerificationManager)
+class RNVerificationManager: RCTEventEmitter {
     
-    private var sessions: Set<KYCSession> = Set()
+    private var sessions: Set<VerificationSession> = Set()
     private var personalSignContinuation: CheckedContinuation<String, Error>?
     private var hasListeners = false
     private var activeTopMostWindowScene: UIWindowScene?
@@ -76,7 +76,7 @@ class RNKYCManager: RCTEventEmitter {
                                            "mintingProperties": mintingPropertiesData])
                 }
                 
-                let session = try await KYCManager.shared.createSession(walletAddress: walletAddress, walletSession: walletSession)
+                let session = try await VerificationManager.shared.createSession(walletAddress: walletAddress, walletSession: walletSession)
                 sessions.insert(session)
                 
                 let rnSession = try session.asReactModel.encodeToDictionary()
@@ -98,7 +98,7 @@ class RNKYCManager: RCTEventEmitter {
             let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
             guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
             else {
-                throw KYCError.genericError
+                throw KycDaoError.genericError
             }
             
             walletSession.personalSignContinuation?.resume(returning: signature)
@@ -119,10 +119,10 @@ class RNKYCManager: RCTEventEmitter {
             let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
             guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
             else {
-                throw KYCError.genericError
+                throw KycDaoError.genericError
             }
 
-            walletSession.personalSignContinuation?.resume(throwing: KYCError.genericError)
+            walletSession.personalSignContinuation?.resume(throwing: KycDaoError.genericError)
             
         } catch {
             
@@ -140,7 +140,7 @@ class RNKYCManager: RCTEventEmitter {
             let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
             guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
             else {
-                throw KYCError.genericError
+                throw KycDaoError.genericError
             }
             
             walletSession.sendMintingTransactionContinuation?.resume(returning: txHash)
@@ -161,10 +161,10 @@ class RNKYCManager: RCTEventEmitter {
             let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
             guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
             else {
-                throw KYCError.genericError
+                throw KycDaoError.genericError
             }
 
-            walletSession.sendMintingTransactionContinuation?.resume(throwing: KYCError.genericError)
+            walletSession.sendMintingTransactionContinuation?.resume(throwing: KycDaoError.genericError)
             
         } catch {
             
@@ -208,19 +208,20 @@ class RNKYCManager: RCTEventEmitter {
         }
     }
     
-    @objc(savePersonalInfo:email:residency:legalEntity:resolve:reject:)
-    func savePersonalInfo(_ sessionData: [String: Any],
-                          email: String,
-                          residency: String,
-                          legalEntity: Bool,
-                          resolve: @escaping RCTPromiseResolveBlock,
-                          reject: @escaping RCTPromiseRejectBlock
+    @objc(setPersonalData:email:residency:legalEntity:resolve:reject:)
+    func setPersonalData(_ sessionData: [String: Any],
+                         email: String,
+                         residency: String,
+                         legalEntity: Bool,
+                         resolve: @escaping RCTPromiseResolveBlock,
+                         reject: @escaping RCTPromiseRejectBlock
     ) {
         Task {
             do {
                 
                 let session = try fetchSessionFromData(sessionData)
-                try await session.savePersonalInfo(email: email, residency: residency, legalEntity: legalEntity)
+                let personalData = PersonalData(email: email, residency: residency, legalEntity: legalEntity)
+                try await session.setPersonalData(personalData)
                 resolve(())
                 
             } catch let error {
@@ -250,13 +251,13 @@ class RNKYCManager: RCTEventEmitter {
         
     }
 
-    @objc(continueWhenEmailConfirmed:resolve:reject:)
-    func continueWhenEmailConfirmed(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(resumeOnEmailConfirmed:resolve:reject:)
+    func resumeOnEmailConfirmed(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task {
             do {
                 
                 let session = try fetchSessionFromData(sessionData)
-                await session.continueWhenEmailConfirmed()
+                try await session.resumeOnEmailConfirmed()
                 resolve(())
                 
             } catch let error {
@@ -275,7 +276,7 @@ class RNKYCManager: RCTEventEmitter {
             guard let keyWindow = activeTopMostWindowScene?.windows.first(where: { $0.isKeyWindow }),
                   let rootViewController = keyWindow.rootViewController
             else {
-                reject("startIdentification", "Failed to start identification", KYCError.genericError)
+                reject("startIdentification", "Failed to start identification", KycDaoError.genericError)
                 return
             }
                 do {
@@ -292,13 +293,13 @@ class RNKYCManager: RCTEventEmitter {
 
     }
     
-    @objc(continueWhenIdentified:resolve:reject:)
-    func continueWhenIdentified(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(resumeWhenIdentified:resolve:reject:)
+    func resumeWhenIdentified(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let session = try fetchSessionFromData(sessionData)
-                await session.continueWhenIdentified()
+                try await session.resumeWhenIdentified()
                 resolve(())
             } catch let error {
                 reject("continueWhenIdentified", "Failed to wait for identification", error)
@@ -400,12 +401,12 @@ class RNKYCManager: RCTEventEmitter {
         return true
     }
     
-    private func fetchSessionFromData(_ sessionData: [String: Any]) throws -> KYCSession {
+    private func fetchSessionFromData(_ sessionData: [String: Any]) throws -> VerificationSession {
         
-        let rnSession = try RNKYCSession.decode(from: sessionData)
+        let rnSession = try RNVerificationSession.decode(from: sessionData)
         guard let session = sessions.first(where: { $0.id == rnSession.id })
         else {
-            throw KYCError.genericError
+            throw KycDaoError.genericError
         }
         
         return session
