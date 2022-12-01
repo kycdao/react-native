@@ -10,10 +10,11 @@ import type {
   PersonalData, 
   MethodHasValidTokenParams, 
   MethodHasValidTokenWalletSessionParams, 
-  MintingResult 
+  MintingResult, 
+  Configuration,
 } from  "./Models";
 export type { Network } from "./Models";
-export { IdentityFlowResult, VerificationStatus, PersonalData } from "./Models";
+export { IdentityFlowResult, VerificationStatus, PersonalData, Configuration, KycDaoEnvironment } from "./Models";
 
 export class VerificationManager {
 
@@ -27,6 +28,10 @@ export class VerificationManager {
     }
 
     return VerificationManager.instance;
+  }
+
+  public static async configure(configuration: Configuration) {
+     await RNVerificationManager.configure({ ... configuration });
   }
 
   public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<VerificationSession> {

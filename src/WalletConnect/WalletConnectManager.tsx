@@ -1,7 +1,7 @@
 import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
 import { WCSessionError } from  "./WalletConnectModels";
 import { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
-import { ErrorEventBody, KycDaoReactEvents, MintingProperties, RNError } from "../Core/Models";
+import { KycDaoReactEvents, MintingProperties, RNError } from "../Core/Models";
 import { BaseWalletSession } from '../Core/BaseWalletSession';
 
 const LINKING_ERROR =

@@ -152,6 +152,20 @@ public enum RNVerificationStatus: String, Codable {
     case notVerified = "NOT_VERIFIED"
 }
 
+public enum RNKycDaoEnvironment: String, Codable {
+    case production = "PRODUCTION"
+    case dev = "DEV"
+    
+    var asNativeModel: KycDaoEnvironment {
+        switch self {
+        case .production:
+            return .production
+        case .dev:
+            return .dev
+        }
+    }
+}
+
 public struct RNConfiguration: Decodable {
     
     public let apiKey: String
@@ -162,6 +176,20 @@ public struct RNConfiguration: Decodable {
         Configuration(apiKey: apiKey,
                       environment: environment,
                       networkConfigs: networkConfigs)
+    }
+    
+    enum CodingKeys: CodingKey {
+        case apiKey
+        case environment
+        case networkConfigs
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.apiKey = try container.decode(String.self, forKey: .apiKey)
+        let env = try container.decode(RNKycDaoEnvironment.self, forKey: .environment)
+        self.environment = env.asNativeModel
+        self.networkConfigs = try container.decode([NetworkConfig].self, forKey: .networkConfigs)
     }
     
 }
