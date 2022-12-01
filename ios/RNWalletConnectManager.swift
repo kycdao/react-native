@@ -34,7 +34,10 @@ class RNWalletConnectManager: RCTEventEmitter {
     }
     
     override func supportedEvents() -> [String]! {
-        [KycReactEvents.wcSessionStarted.rawValue]
+        [
+            KycReactEvents.wcSessionStarted.rawValue,
+            KycReactEvents.wcSessionFailed.rawValue
+        ]
     }
     
     @objc(startListening:reject:)
@@ -54,7 +57,9 @@ class RNWalletConnectManager: RCTEventEmitter {
                 self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
                                 body: eventBody)
             case .failure(.failedToConnect(wallet: let wallet)):
-                guard let eventBody = try? wallet.encodeToDictionary() else { return }
+                let walletJSON = try? wallet?.asReactModel.toJSON()
+                let rnError = RNError(message: "Failed to connect to wallet", data: walletJSON)
+                guard let eventBody = try? rnError.encodeToDictionary() else { return }
                 self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
                                 body: eventBody)
             default:
@@ -81,7 +86,7 @@ class RNWalletConnectManager: RCTEventEmitter {
                 
             } catch let error {
                 
-                reject("list_wallets", "Failed to list wallets", error)
+                reject("list_wallets", "Failed to list wallets: \(error.localizedDescription)", error)
                 
             }
         }

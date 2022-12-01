@@ -52,6 +52,23 @@ class RNVerificationManager: RCTEventEmitter {
         activeTopMostWindowScene = UIWindowScene.focused
     }
     
+    @objc(configure:resolve:reject:)
+    func configure(_ configurationData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        
+        Task {
+            do {
+                
+                let rnConfiguration = try RNConfiguration.decode(from: configurationData)
+                VerificationManager.configure(rnConfiguration.asNativeModel)
+                resolve(())
+                
+            } catch let error {
+                reject("configure", "Failed to configure, invalid configuration data", error)
+            }
+        }
+        
+    }
+    
     @objc(createSession:walletSession:resolve:reject:)
     func createSession(_ walletAddress: String, walletSession walletSessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
@@ -293,16 +310,16 @@ class RNVerificationManager: RCTEventEmitter {
 
     }
     
-    @objc(resumeWhenIdentified:resolve:reject:)
-    func resumeWhenIdentified(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(resumeOnVerificationCompleted:resolve:reject:)
+    func resumeOnVerificationCompleted(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let session = try fetchSessionFromData(sessionData)
-                try await session.resumeWhenIdentified()
+                try await session.resumeOnVerificationCompleted()
                 resolve(())
             } catch let error {
-                reject("continueWhenIdentified", "Failed to wait for identification", error)
+                reject("resumeOnVerificationCompleted", "Failed to wait for verification", error)
             }
         }
         

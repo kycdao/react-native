@@ -1,34 +1,45 @@
-import { RNKYCManager } from './../RNKYCManager';
-import { RNWalletConnectManager } from './../WalletConnect/WalletConnectManager';
-import type { VerificationStatus, KYCSessionInterface, WalletSessionInterface, IdentityFlowResult, GasEstimation, TokenImage, PersonalData, MethodHasValidTokenParams, MethodHasValidTokenWalletSessionParams } from  "./KYCModels";
-export type { Network } from "./KYCModels";
-export { IdentityFlowResult, VerificationStatus, PersonalData } from "./KYCModels";
+import { RNVerificationManager } from '../RNVerificationManager';
+import { RNWalletConnectManager } from '../WalletConnect/WalletConnectManager';
+import type { 
+  VerificationStatus, 
+  VerificationSessionInterface, 
+  WalletSessionInterface, 
+  IdentityFlowResult, 
+  GasEstimation, 
+  TokenImage, 
+  PersonalData, 
+  MethodHasValidTokenParams, 
+  MethodHasValidTokenWalletSessionParams, 
+  MintingResult 
+} from  "./Models";
+export type { Network } from "./Models";
+export { IdentityFlowResult, VerificationStatus, PersonalData } from "./Models";
 
-export class KYCManager {
+export class VerificationManager {
 
-  private static instance: KYCManager;
+  private static instance: VerificationManager;
 
   private constructor() { }
 
-  public static getInstance(): KYCManager {
-    if (!KYCManager.instance) {
-      KYCManager.instance = new KYCManager();
+  public static getInstance(): VerificationManager {
+    if (!VerificationManager.instance) {
+      VerificationManager.instance = new VerificationManager();
     }
 
-    return KYCManager.instance;
+    return VerificationManager.instance;
   }
 
-  public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<KYCSession> {
-    var kycSessionData = await RNKYCManager.createSession(walletAddress, { ...walletSession }) as KYCSessionInterface;
-    if (kycSessionData !== undefined) {
-      return new KYCSession(kycSessionData.id, 
-                            kycSessionData.walletAddress,
-                            kycSessionData.chainId,
-                            kycSessionData.loggedIn,
-                            kycSessionData.emailConfirmed,
-                            kycSessionData.disclaimerAccepted,
-                            kycSessionData.requiredInformationProvided,
-                            kycSessionData.verificationStatus,
+  public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<VerificationSession> {
+    var sessionData = await RNVerificationManager.createSession(walletAddress, { ...walletSession }) as VerificationSessionInterface;
+    if (sessionData !== undefined) {
+      return new VerificationSession(sessionData.id, 
+                            sessionData.walletAddress,
+                            sessionData.chainId,
+                            sessionData.loggedIn,
+                            sessionData.emailConfirmed,
+                            sessionData.disclaimerAccepted,
+                            sessionData.requiredInformationProvided,
+                            sessionData.verificationStatus,
                             walletSession,
                             );
     }
@@ -37,7 +48,7 @@ export class KYCManager {
   }
 
   public async hasValidToken(params: MethodHasValidTokenParams) : Promise<boolean>{
-    return await RNKYCManager.hasValidToken(params)
+    return await RNVerificationManager.hasValidToken(params)
   }
   public async hasValidTokenWalletSession(params: MethodHasValidTokenWalletSessionParams) : Promise<boolean>{
     return await RNWalletConnectManager.hasValidTokenWalletSession(params)
@@ -45,7 +56,7 @@ export class KYCManager {
 
 }
 
-export class KYCSession {
+export class VerificationSession {
 
   id: string;
   walletAddress: string;
@@ -84,55 +95,55 @@ export class KYCSession {
      * By not sending `this` directly, but a copy, we avoid the react native bridge locking on our javascript object. 
      * The locking would result in the object becoming immutable, which prevents syncing session data with the native layer
      ***/
-    await RNKYCManager.login({ ...this });
+    await RNVerificationManager.login({ ...this });
     await this.syncSessionData();
   }
 
   public async acceptDisclaimer() {
-    await RNKYCManager.acceptDisclaimer({ ...this });
+    await RNVerificationManager.acceptDisclaimer({ ...this });
   }
 
   public async setPersonalData(personalData : PersonalData) {
-    await RNKYCManager.setPersonalData({ ...this }, personalData);
+    await RNVerificationManager.setPersonalData({ ...this }, personalData);
   }
 
   public async sendConfirmationEmail() {
-    await RNKYCManager.sendConfirmationEmail({ ...this });
+    await RNVerificationManager.sendConfirmationEmail({ ...this });
   }
 
-  public async continueWhenEmailConfirmed() {
-    await RNKYCManager.continueWhenEmailConfirmed({ ...this });
+  public async resumeOnEmailConfirmed() {
+    await RNVerificationManager.resumeOnEmailConfirmed({ ...this });
   }
 
   public async startIdentification(): Promise<IdentityFlowResult> {
-    return await RNKYCManager.startIdentification({ ...this });
+    return await RNVerificationManager.startIdentification({ ...this });
   }
 
   public async resumeOnVerificationCompleted() {
-    await RNKYCManager.resumeOnVerificationCompleted({ ...this });
+    await RNVerificationManager.resumeOnVerificationCompleted({ ...this });
   }
 
   public async getNFTImages(): Promise<[TokenImage]> {
-    return await RNKYCManager.getNFTImages({ ...this });
+    return await RNVerificationManager.getNFTImages({ ...this });
   }
 
   public async estimateGasForMinting(): Promise<GasEstimation> {
-    return await RNKYCManager.estimateGasForMinting({ ...this },3);
+    return await RNVerificationManager.estimateGasForMinting({ ...this },3);
   }
 
   public async requestMinting(selectedImageId: string) {
-    await RNKYCManager.requestMinting({ ...this }, selectedImageId);
+    await RNVerificationManager.requestMinting({ ...this }, selectedImageId);
   }
 
-  public async mint() : Promise<string> {
-    return await RNKYCManager.mint({ ...this });
+  public async mint() : Promise<MintingResult> {
+    return await RNVerificationManager.mint({ ...this });
   }
 
   private async syncSessionData() {
 
     try {
       
-      var sessionDataUpdate = await RNKYCManager.freshSessionData({ ...this}) as KYCSessionInterface;
+      var sessionDataUpdate = await RNVerificationManager.freshSessionData({ ...this}) as VerificationSessionInterface;
 
       console.log("Fresh session data");
       console.log(sessionDataUpdate);

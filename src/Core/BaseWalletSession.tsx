@@ -2,12 +2,12 @@
 import { EventSubscription, NativeEventEmitter } from "react-native";
 import {
     WalletSessionInterface,
-    KycReactEvents,
+    KycDaoReactEvents,
     MethodMintingTransactionParams,
     MethodPersonalSignParams,
     MintingProperties,
-} from "./KYCModels";
-import { RNKYCManager } from "./../RNKYCManager";
+} from "./Models";
+import { RNVerificationManager } from "./../RNVerificationManager";
 
 export abstract class BaseWalletSession implements WalletSessionInterface {
 
@@ -22,23 +22,23 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
         this.id = id;
         this.chainId = chainId;
 
-        var eventEmitter = new NativeEventEmitter(RNKYCManager);
+        var eventEmitter = new NativeEventEmitter(RNVerificationManager);
 
-        this.personalSignListener = eventEmitter.addListener(KycReactEvents.MethodPersonalSign, async event => {
+        this.personalSignListener = eventEmitter.addListener(KycDaoReactEvents.MethodPersonalSign, async event => {
             var personalSignParams = event as MethodPersonalSignParams;
             if (personalSignParams !== undefined && personalSignParams.id == this.id) {
                 try {
                     var signature = await this.personalSign(personalSignParams.walletAddress, personalSignParams.message);
-                    RNKYCManager.personalSignSuccess({ ...this }, signature);
+                    RNVerificationManager.personalSignSuccess({ ...this }, signature);
                 } catch (error) {
                     console.error(error);
-                    RNKYCManager.personalSignFailure({ ...this }, error);
+                    RNVerificationManager.personalSignFailure({ ...this }, error);
                 }
 
             }
         });
 
-        this.mintingTransactionListener = eventEmitter.addListener(KycReactEvents.MethodMintingTransaction, async event => {
+        this.mintingTransactionListener = eventEmitter.addListener(KycDaoReactEvents.MethodMintingTransaction, async event => {
             console.log(event);
             var mintingTransactionParams = event as MethodMintingTransactionParams;
             if (mintingTransactionParams !== undefined && mintingTransactionParams.id == this.id) {
@@ -49,11 +49,11 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
                     console.log("TxHash");
                     console.log(txHash);
                     console.error("Success");
-                    RNKYCManager.mintingTransactionSuccess({ ...this }, txHash);
+                    RNVerificationManager.mintingTransactionSuccess({ ...this }, txHash);
                 } catch (error) {
                     console.log("Ran into error");
                     console.error(error);
-                    RNKYCManager.mintingTransactionFailure({ ...this }, error);
+                    RNVerificationManager.mintingTransactionFailure({ ...this }, error);
                 }
             }
         });

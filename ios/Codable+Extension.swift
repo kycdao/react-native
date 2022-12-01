@@ -36,6 +36,11 @@ extension Encodable {
         return dictionary
     }
     
+    func toJSON(_ encoder: JSONEncoder = JSONEncoder()) throws -> String {
+        let data = try encoder.encode(self)
+        return String(decoding: data, as: UTF8.self)
+    }
+    
 }
 
 extension Decodable {

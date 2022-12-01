@@ -102,3 +102,9 @@ extension VerificationStatus {
         }
     }
 }
+
+extension Wallet {
+    var asReactModel: RNWallet {
+        RNWallet(id: id, name: name, imageURL: imageURL)
+    }
+}

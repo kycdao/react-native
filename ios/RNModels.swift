@@ -151,3 +151,38 @@ public enum RNVerificationStatus: String, Codable {
     case processing = "PROCESSING"
     case notVerified = "NOT_VERIFIED"
 }
+
+public struct RNConfiguration: Decodable {
+    
+    public let apiKey: String
+    public let environment: KycDaoEnvironment
+    public let networkConfigs: [NetworkConfig]
+    
+    public var asNativeModel: Configuration {
+        Configuration(apiKey: apiKey,
+                      environment: environment,
+                      networkConfigs: networkConfigs)
+    }
+    
+}
+
+public struct RNWallet: Identifiable, Hashable, Codable {
+    /// A unique id of the wallet
+    public let id: String
+    /// Name of the wallet app
+    public let name: String
+    /// An url pointing to an icon image of the wallet app
+    public let imageURL: URL?
+}
+
+public struct RNError: Encodable {
+    public let message: String
+    
+    //contains JSON encoded data
+    public let data: String?
+    
+    init(message: String, data: String? = nil) {
+        self.message = message
+        self.data = data
+    }
+}

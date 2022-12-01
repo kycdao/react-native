@@ -31,6 +31,10 @@ RCT_EXTERN_METHOD(sendMintingTransaction:(NSDictionary)sessionData walletAddress
 
 @interface RCT_EXTERN_MODULE(RNVerificationManager, RCTEventEmitter)
 
+RCT_EXTERN_METHOD(configure:(NSDictionary)configurationData
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(createSession:(NSString)walletAddress
                   walletSession:(NSDictionary)walletSessionData
                   resolve:(RCTPromiseResolveBlock)resolve
@@ -63,7 +67,7 @@ RCT_EXTERN_METHOD(startIdentification:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(resumeWhenIdentified:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(resumeOnVerificationCompleted:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
