@@ -39,13 +39,17 @@ export default function App() {
     // walletConnectManager.addCustomRpcURL(
     //   "eip155:80001", "https://polygon-rpc.com"
     // )
-    this.onSuccess = walletConnectManager.onSessionSuccessfullyEstablished(async (err: WCSessionError | null, walletSession?: WalletSession) => {
+
+    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(
+      async (walletSession: WalletSession) => {
+
+      }, 
+      async (error: WCSessionError) => {
+
+      });
+
+    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(async (walletSession: WalletSession) => {
       console.log("RECEIVED SESSION UPDATE");
-      
-      if (err) {
-        console.log(err as WCSessionError);
-        return;
-      }
 
       walletSessionRef.current = walletSession;
 
@@ -114,15 +118,15 @@ export default function App() {
       console.log("URI:" + mintingResult.explorerURL);
       console.log("REACT DEBUG: Hurray");
 
+    },
+    //Session start failure
+    async (error: WCSessionError) => {
+      console.error(error);
     });
-    // this.onFailed = walletConnectManager.onSessionFailed(async (event) => {
-    //   console.log("REACT DEBUG: WALLETCONNECTION FAILED")
-    // })
+    
     walletConnectManager.startListening();
     return function cleanup() {
-      this.onSuccess.remove();
-      // this.onFailed.remove();
-
+      this.sessionStartSubscription.remove();
     };
   }, []);
   const [text, onChangeText] = React.useState("");
