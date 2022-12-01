@@ -40,6 +40,12 @@ RCT_EXTERN_METHOD(createSession:(NSString)walletAddress
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(hasValidToken:(NSString)verificationTypeData
+                  walletAddress:(NSString)walletAddress
+                  chainId:(NSString)chainId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(login:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

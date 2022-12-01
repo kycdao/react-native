@@ -8,10 +8,11 @@ import type {
   GasEstimation, 
   TokenImage, 
   PersonalData, 
-  MethodHasValidTokenParams, 
-  MethodHasValidTokenWalletSessionParams, 
+  // MethodHasValidTokenParams, 
+  // MethodHasValidTokenWalletSessionParams, 
   MintingResult, 
   Configuration,
+  VerificationType
 } from  "./Models";
 export type { Network } from "./Models";
 export { IdentityFlowResult, VerificationStatus, PersonalData, Configuration, KycDaoEnvironment } from "./Models";
@@ -52,12 +53,23 @@ export class VerificationManager {
     throw TypeError("Native model of KYCSession does not match the TypeScript model");
   }
 
-  public async hasValidToken(params: MethodHasValidTokenParams) : Promise<boolean>{
-    return await RNVerificationManager.hasValidToken(params)
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, chainId: string) : Promise<boolean>;
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSession: WalletSessionInterface) : Promise<boolean>;
+  
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSessionOrChainId: WalletSessionInterface | string) : Promise<boolean> {
+    if (typeof walletSessionOrChainId === 'string') {
+      return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId);
+    }
+    return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId.chainId);
   }
-  public async hasValidTokenWalletSession(params: MethodHasValidTokenWalletSessionParams) : Promise<boolean>{
-    return await RNWalletConnectManager.hasValidTokenWalletSession(params)
-  }
+
+  // public async hasValidToken(verificationType: VerificationType, walletAddress: string, chainId: string) : Promise<boolean>{
+  //   return await RNVerificationManager.hasValidToken(verificationType, walletAddress, chainId);
+  // }
+
+  // public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSession: WalletSessionInterface) : Promise<boolean>{
+  //   return await RNWalletConnectManager.hasValidTokenWalletSession(verificationType, walletAddress, walletSession)
+  // }
 
 }
 

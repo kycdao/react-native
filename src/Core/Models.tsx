@@ -96,16 +96,16 @@ export interface WalletSessionInterface {
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
 }
 
-export interface MethodHasValidTokenParams {
-    verificationType: VerificationType,
-    walletAddress: string,
-    networkOption: NetworkConfig
-}
-export interface MethodHasValidTokenWalletSessionParams {
-    verificationType: VerificationType,
-    walletAddress: string,
-    walletSession: WalletSessionInterface
-}
+// export interface MethodHasValidTokenParams {
+//     verificationType: VerificationType,
+//     walletAddress: string,
+//     networkOption: NetworkConfig
+// }
+// export interface MethodHasValidTokenWalletSessionParams {
+//     verificationType: VerificationType,
+//     walletAddress: string,
+//     walletSession: WalletSessionInterface
+// }
 
 export interface MethodPersonalSignParams {
     id: string;

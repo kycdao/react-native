@@ -107,6 +107,29 @@ class RNVerificationManager: RCTEventEmitter {
         }
     }
     
+    @objc(hasValidToken:walletAddress:chainId:resolve:reject:)
+    func hasValidToken(_ verificationTypeData: String, walletAddress: String, chainId: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                
+                let verificationType = VerificationType(rawValue: verificationTypeData)
+                guard let verificationType else { throw KycDaoError.genericError }
+                
+                let hasValidToken = try await VerificationManager.shared
+                    .hasValidToken(verificationType: verificationType,
+                                   walletAddress: walletAddress,
+                                   chainId: chainId)
+                
+                resolve(hasValidToken)
+                
+            } catch let error {
+                
+                reject("login", "Failed to login with wallet", error)
+                
+            }
+        }
+    }
+    
     @objc(personalSignSuccess:signature:)
     func personalSignSuccess(_ walletSessionData: [String: Any], signature: String) {
         

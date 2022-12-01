@@ -123,7 +123,7 @@ export default function App() {
     async (error: WCSessionError) => {
       console.error(error);
     });
-    
+
     walletConnectManager.startListening();
     return function cleanup() {
       this.sessionStartSubscription.remove();
@@ -167,17 +167,16 @@ export default function App() {
         onPress={async () => {
           console.log("Pressed:")
           console.log(walletSessionRef.current)
-          /*if (walletSessionRef.current != undefined) {
-            var res = await KYCManager.getInstance().hasValidTokenWalletSession(
-              {
-                verificationType: VerificationType.KYC,
-                walletAddress: walletSessionRef.current.accounts[0],
-                walletSession: walletSessionRef.current
-              }
-            )
+          if (walletSessionRef.current != undefined) {
+            var res = await VerificationManager.getInstance()
+              .hasValidToken(
+                VerificationType.KYC,
+                walletSessionRef.current.accounts[0],
+                walletSessionRef.current
+              )
             console.log(res)
             Alert.alert("Has valid token?", res ? "yes" : "no")
-          }*/
+          }
         }}
       />
     </SafeAreaView>
