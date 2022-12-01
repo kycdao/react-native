@@ -40,7 +40,6 @@ class ReactNativeWalletSessionImpl private constructor(
 	var personalSignContinuation : Continuation<String>? = null
 	var sendMintingAction : SendMintingTransactionAction = null
 	var sendMintingContinuation : Continuation<MintingTransactionResult>? = null
-	override val rpcURL: String? = null
 
 	override fun getChainId(): String {
 		return chainID

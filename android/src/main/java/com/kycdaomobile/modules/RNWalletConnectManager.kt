@@ -3,22 +3,19 @@ package com.kycdaomobile.modules
 import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.kycdao.android.sdk.kycSession.KycManager
-import com.kycdao.android.sdk.model.NetworkOption
-import com.kycdao.android.sdk.model.VerificationType
 import com.kycdao.android.sdk.model.functions.mint.MintingProperties
 import com.kycdao.android.sdk.util.Resource
+import com.kycdao.android.sdk.verificationSession.VerificationManager
 import com.kycdao.android.sdk.wallet.ChainID
 import com.kycdao.android.sdk.wallet.RPCURL
 import com.kycdao.android.sdk.wallet.WalletConnectManager
 import com.kycdao.android.sdk.wallet.WalletConnectSession
 import com.kycdaomobile.Wallet
-import com.kycdaomobile.events.KycReactEvent
+import com.kycdaomobile.events.KycDaoReactEvent
 import com.kycdaomobile.extensions.launch
 import com.kycdaomobile.extensions.toType
 import com.kycdaomobile.models.RNEventTypes
 import com.kycdaomobile.models.event_bodies.ErrorEventBody
-import com.kycdaomobile.models.react_model.RNMethodHasTokenParams
 import com.kycdaomobile.models.react_model.RNMethodHasTokenWalletSessionParams
 import com.kycdaomobile.models.react_model.toReactNativeModel
 import com.kycdaomobile.toWritableArray
@@ -49,10 +46,9 @@ class RNWalletConnectManager(reactContext: ReactApplicationContext) :
 						is Resource.Failure -> {
 							val errorBody = ErrorEventBody(
 								message = result.message,
-								errorType = RNEventTypes.FailedToConnectWalletConnect
 							)
 							emit(
-								KycReactEvent.WCSessionFailed.stringForm,
+								KycDaoReactEvent.WCSessionStarted.stringForm,
 								errorBody.toWritableMap()
 							)
 						}
@@ -61,7 +57,7 @@ class RNWalletConnectManager(reactContext: ReactApplicationContext) :
 								walletSessions[session.id] = session
 								val eventBody = session.toReactNativeModel()
 								emit(
-									KycReactEvent.WCSessionStarted.stringForm,
+									KycDaoReactEvent.WCSessionStarted.stringForm,
 									eventBody.toWritableMap()
 								)
 							}
@@ -79,7 +75,7 @@ class RNWalletConnectManager(reactContext: ReactApplicationContext) :
 			val walletSession = walletSessions[params.walletSession.id] ?: throw Exception("Wallet session not found")
 			println("HAS VALID WC")
 			println("WALLET ADDRESS:" +params.walletAddress)
-			val result = KycManager.hasValidToken(
+			val result = VerificationManager.hasValidToken(
 				params.verificationType,
 				params.walletAddress,
 				walletSession
@@ -88,10 +84,7 @@ class RNWalletConnectManager(reactContext: ReactApplicationContext) :
 		}
 	}
 
-	@ReactMethod
-	fun addCustomRpcURL(chainId: ChainID, rpcURL: RPCURL){
-		WalletConnectManager.addCustomRPCUrl(chainId,rpcURL)
-	}
+
 	@ReactMethod
 	fun listWallets(promise: Promise) {
 		Log.d("RNWalletConnectManager", "listWallets()")

@@ -3,16 +3,13 @@ package com.kycdaomobile.modules
 import androidx.activity.ComponentActivity
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.kycdao.android.sdk.kycSession.KycManager
-import com.kycdao.android.sdk.kycSession.KycSession
 import com.kycdao.android.sdk.model.GasEstimation
-import com.kycdao.android.sdk.model.NetworkOption
 import com.kycdao.android.sdk.model.PersonalData
-import com.kycdao.android.sdk.model.VerificationType
 import com.kycdao.android.sdk.model.functions.mint.MintingTransactionResult
-import com.kycdaomobile.events.KycReactEvent
+import com.kycdao.android.sdk.verificationSession.VerificationManager
+import com.kycdao.android.sdk.verificationSession.VerificationSession
+import com.kycdaomobile.events.KycDaoReactEvent
 import com.kycdaomobile.extensions.launch
-import com.kycdaomobile.extensions.toJson
 import com.kycdaomobile.extensions.toType
 import com.kycdaomobile.models.event_bodies.PersonalSignEventBody
 import com.kycdaomobile.models.event_bodies.SendMintingTransactionEventBody
@@ -28,19 +25,18 @@ import kotlin.Exception
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.math.min
 
-class RNKYCManager(private val reactContext: ReactApplicationContext) :
+class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	ReactContextBaseJavaModule(reactContext), CoroutineScope {
 
 	override val coroutineContext: CoroutineContext
 		get() = Dispatchers.Default
 
 	override fun getName(): String {
-		return "RNKYCManager"
+		return "RNVerificationManager"
 	}
 
-	private var sessions: HashMap<String, KycSession> = hashMapOf()
+	private var sessions: HashMap<String, VerificationSession> = hashMapOf()
 
 	@ReactMethod
 	fun createSession(walletAddress: String, walletSessionMap: ReadableMap, promise: Promise) {
@@ -60,7 +56,7 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 							message = message
 						).toWritableMap()
 						eventEmiter.emit(
-							KycReactEvent.MethodPersonalSign.stringForm,
+							KycDaoReactEvent.MethodPersonalSign.stringForm,
 							eventBody
 						)
 					}
@@ -71,11 +67,11 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 							mintingProperties = mintingProperties
 						).toWritableMap()
 						eventEmiter.emit(
-							KycReactEvent.MethodMintingTransaction.stringForm,
+							KycDaoReactEvent.MethodMintingTransaction.stringForm,
 							eventBody
 						)
 					}
-			val kycSession = KycManager.createSession(walletAddress, walletSession)
+			val kycSession = VerificationManager.createSession(walletAddress, walletSession)
 			sessions[kycSession.id] = kycSession
 
 			promise.resolve(kycSession.toReactNativeModel().toWritableMap())
@@ -86,10 +82,10 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 	fun hasValidToken(hasTokenValidParams: ReadableMap,promise: Promise){
 		promise.launch(this){
 			val params = hasTokenValidParams.toType(RNMethodHasTokenParams::class.java)
-			val result = KycManager.hasValidToken(
+			val result = VerificationManager.hasValidToken(
 				params.verificationType,
 				params.walletAddress,
-				params.networkOption
+				params.networkOption.chainId
 			)
 			promise.resolve(result)
 		}
@@ -256,7 +252,7 @@ class RNKYCManager(private val reactContext: ReactApplicationContext) :
 		}
 	}
 
-	private suspend fun usingKycSessionFrom(sessionDataMap: ReadableMap, action :suspend KycSession.() ->Unit) {
+	private suspend fun usingKycSessionFrom(sessionDataMap: ReadableMap, action :suspend VerificationSession.() ->Unit) {
 		val sessionData = sessionDataMap.toType(RNKycSession::class.java)
 		action(sessions[sessionData.id] ?: throw Exception("No kyc session found"))
 	}

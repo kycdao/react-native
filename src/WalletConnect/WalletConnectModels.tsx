@@ -32,7 +32,8 @@ export namespace WalletConnectSessionInterface {
         && typeof wcSession.url === "object"
         && typeof wcSession.accounts === "object"
         && typeof wcSession.icon === "string"
-        && typeof wcSession.walletId === "string"
+        && (typeof wcSession.walletId === "string"
+        || typeof wcSession.walletId === "undefined")
         && typeof wcSession.chainId === "string";
   }
 }

@@ -1,6 +1,6 @@
 package com.kycdaomobile.events
 
-enum class KycReactEvent(val stringForm: String) {
+enum class KycDaoReactEvent(val stringForm: String) {
   WCSessionStarted("WC_SESSION_STARTED"),
   WCSessionFailed("WC_SESSION_FAILED"),
   MethodHasValidToken("METHOD_HAS_VALID_TOKEN"),

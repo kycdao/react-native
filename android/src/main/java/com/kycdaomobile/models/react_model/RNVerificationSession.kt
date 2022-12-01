@@ -1,7 +1,7 @@
 package com.kycdaomobile.models.react_model
 
-import com.kycdao.android.sdk.kycSession.KycSession
 import com.kycdao.android.sdk.model.VerificationStatus
+import com.kycdao.android.sdk.verificationSession.VerificationSession
 
 data class RNKycSession(
 	val id: String,
@@ -14,7 +14,7 @@ data class RNKycSession(
 	val verificationStatus: VerificationStatus
 )
 
-fun KycSession.toReactNativeModel(): RNKycSession {
+fun VerificationSession.toReactNativeModel(): RNKycSession {
 	return RNKycSession(
 		id = id,
 		walletAddress = walletAddress,

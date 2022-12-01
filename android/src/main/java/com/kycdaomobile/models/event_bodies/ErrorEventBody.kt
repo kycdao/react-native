@@ -4,5 +4,5 @@ import com.kycdaomobile.models.RNEventTypes
 
 data class ErrorEventBody(
 	val message: String,
-	val errorType: RNEventTypes
+	val data: Any? = null
 )
