@@ -28,12 +28,16 @@ export class WalletConnectManager {
     public static getInstance(): WalletConnectManager {
         if (!WalletConnectManager.instance) {
             WalletConnectManager.instance = new WalletConnectManager();
+        
         }
-
         return WalletConnectManager.instance;
     }
 
-    public onSessionSuccessfullyEstablished(listener: (err: WCSessionError | null, walletSession?: WalletSession) => void): EmitterSubscription {
+    public subscribeOnSession(
+        start: (walletSession?: WalletSession) => void, 
+        failure: (err: WCSessionError) => void
+    ): EmitterSubscription {
+
         return this.getEventEmitter().addListener(KycDaoReactEvents.WCSessionStarted, event => {
             
             console.log("RECEIVED EVENT SESSION");
@@ -46,7 +50,7 @@ export class WalletConnectManager {
                 if ((errorObject.data as Wallet) !== undefined) {
                     var wallet = errorObject.data as Wallet;
                     var error = new WCSessionError(errorObject.message, wallet);
-                    listener(error);
+                    failure(error);
                 }
 
             } else if (WalletConnectSessionInterface.looksLike(event)) {
@@ -64,7 +68,7 @@ export class WalletConnectManager {
                                                         walletSessionData.icon,
                                                         walletSessionData.name);
                     console.log("WALLET SESSION CREATED: " + walletSession);
-                    listener(null, walletSession);
+                    start(walletSession);
                 }
 
             }

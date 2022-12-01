@@ -146,9 +146,9 @@ export interface RNError {
 
 export namespace RNError {
     export function looksLike(object: any): object is RNError {
-        const error: RNError = object
+        const error: RNError = object;
         return typeof error.message  === "string"
-            && typeof error.data === "object";
+            && typeof error.data === "string";
       }
 }
 
