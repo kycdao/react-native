@@ -8,7 +8,7 @@ export {
   VerificationStatus, 
   PersonalData 
 } from './Core/VerificationManager';
-export { NetworkOption, VerificationType} from './Core/Models'
+export { NetworkConfig, VerificationType, KycDaoEnvironment, Configuration} from './Core/Models'
 
 const LINKING_ERROR =
   `The package 'react-native-awesome-module' doesn't seem to be linked. Make sure: \n\n` +

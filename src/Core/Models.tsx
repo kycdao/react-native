@@ -9,11 +9,6 @@ export interface VerificationSessionInterface {
     requiredInformationProvided: boolean;
     verificationStatus: VerificationStatus;
 }
-
-export interface ErrorEventBody {
-    message: string;
-    errorType: ErrorType;
-}
   
 export interface SmartContractConfig {
     address: string;
@@ -78,7 +73,8 @@ export class PersonalData{
         this.isLegalEntity = isLegalEntity
     }
 }
-export class NetworkOption{
+
+export class NetworkConfig {
     chainId: string;
     rpcURL?: string;
     
@@ -103,7 +99,7 @@ export interface WalletSessionInterface {
 export interface MethodHasValidTokenParams {
     verificationType: VerificationType,
     walletAddress: string,
-    networkOption: NetworkOption
+    networkOption: NetworkConfig
 }
 export interface MethodHasValidTokenWalletSessionParams {
     verificationType: VerificationType,
@@ -160,4 +156,25 @@ export interface MintingResult {
     explorerURL?: string
     transactionId: string
     tokenId: string
+}
+
+export enum KycDaoEnvironment {
+    Production = "PRODUCTION",
+    Dev = "DEV"
+}
+
+export class Configuration {
+    apiKey: string;
+    environment: KycDaoEnvironment;
+    networkConfigs: NetworkConfig[];
+
+    constructor(
+        apiKey: string,
+        environment: KycDaoEnvironment,
+        networkConfigs: NetworkConfig[] = []
+    ){
+        this.apiKey = apiKey
+        this.environment = environment
+        this.networkConfigs = networkConfigs
+    }
 }

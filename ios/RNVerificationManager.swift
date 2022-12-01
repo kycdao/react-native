@@ -63,7 +63,7 @@ class RNVerificationManager: RCTEventEmitter {
                 resolve(())
                 
             } catch let error {
-                reject("configure", "Failed to configure, invalid configuration data", error)
+                reject("configure", "Failed to configure, invalid configuration data: \(configurationData)", error)
             }
         }
         

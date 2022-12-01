@@ -1,17 +1,40 @@
 import * as React from 'react';
 
 import { StyleSheet, Text, Button, SafeAreaView, TextInput, Alert } from 'react-native';
-import { multiply, printStuff, WalletConnectManager, WalletSession, VerificationManager, IdentityFlowResult, VerificationStatus, PersonalData, VerificationType, NetworkOption, WalletConnectSessionInterface, WCSessionError } from 'kycdao-mobile';
+import { 
+  multiply, 
+  printStuff, 
+  WalletConnectManager, 
+  WalletSession, 
+  VerificationManager, 
+  IdentityFlowResult, 
+  VerificationStatus, 
+  PersonalData, 
+  VerificationType, 
+  NetworkConfig, 
+  WalletConnectSessionInterface, 
+  WCSessionError,
+  Configuration,
+  KycDaoEnvironment
+} from 'kycdao-mobile';
 // import type { WalletConnectSessionInterface } from 'src/WalletConnect/WalletConnectModels';
 
+const configuration = new Configuration("", KycDaoEnvironment.Dev);
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
   const walletSessionRef = React.useRef<WalletConnectSessionInterface>();
 
   React.useEffect(() => {
+
+    const configure = async () => {
+      await VerificationManager.configure(configuration);
+    }
+
     multiply(3, 7).then(setResult);
-    console.log("REACT DEBUG: HERE AGAIN")
+    console.log("REACT DEBUG: HERE AGAIN");
+    configure().catch(console.error);;
+    
     var walletConnectManager = WalletConnectManager.getInstance();
     // walletConnectManager.addCustomRpcURL(
     //   "eip155:80001", "https://polygon-rpc.com"
