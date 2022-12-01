@@ -1,7 +1,14 @@
 import { NativeModules, Platform } from 'react-native';
 export { WalletConnectManager, WalletSession } from './WalletConnect/WalletConnectManager';
-export {KYCManager, KYCSession, Network, IdentityFlowResult, VerificationStatus, PersonalData } from './KYC/KYCManager';
-export {NetworkOption, VerificationType} from './KYC/KYCModels'
+export { 
+  VerificationManager, 
+  VerificationSession, 
+  Network, 
+  IdentityFlowResult, 
+  VerificationStatus, 
+  PersonalData 
+} from './Core/VerificationManager';
+export { NetworkOption, VerificationType} from './Core/Models'
 
 const LINKING_ERROR =
   `The package 'react-native-awesome-module' doesn't seem to be linked. Make sure: \n\n` +

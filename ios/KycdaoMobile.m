@@ -29,7 +29,11 @@ RCT_EXTERN_METHOD(sendMintingTransaction:(NSDictionary)sessionData walletAddress
 
 @end
 
-@interface RCT_EXTERN_MODULE(RNKYCManager, RCTEventEmitter)
+@interface RCT_EXTERN_MODULE(RNVerificationManager, RCTEventEmitter)
+
+RCT_EXTERN_METHOD(configure:(NSDictionary)configurationData
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(createSession:(NSString)walletAddress
                   walletSession:(NSDictionary)walletSessionData
@@ -44,7 +48,7 @@ RCT_EXTERN_METHOD(acceptDisclaimer:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(savePersonalInfo:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(setPersonalData:(NSDictionary)sessionData
                   email:(NSString)email
                   residency:(NSString)residency
                   legalEntity:(BOOL)legalEntity
@@ -55,7 +59,7 @@ RCT_EXTERN_METHOD(sendConfirmationEmail:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(continueWhenEmailConfirmed:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(resumeOnEmailConfirmed:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
@@ -63,7 +67,7 @@ RCT_EXTERN_METHOD(startIdentification:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(continueWhenIdentified:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(resumeOnVerificationCompleted:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 

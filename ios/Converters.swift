@@ -9,7 +9,7 @@ import Foundation
 import KycDao
 import WalletConnectSwift
 
-extension WalletSession {
+extension WalletConnectSession {
     var asReactModel: RNWalletSession {
         RNWalletSession(id: id,
                         url: url.asReactModel,
@@ -31,32 +31,24 @@ extension WCURL {
     }
 }
 
-extension SmartContractConfig {
+/*extension SmartContractConfig {
     var asReactModel: RNSmartContractConfig {
         RNSmartContractConfig(address: address,
                               paymentDiscountPercent: paymentDiscountPercent,
                               verificationType: verificationType,
                               network: network)
     }
-}
+}*/
 
-extension KYCSession {
-    var asReactModel: RNKYCSession {
-        RNKYCSession(id: self.id,
+extension VerificationSession {
+    var asReactModel: RNVerificationSession {
+        RNVerificationSession(id: self.id,
                      walletAddress: self.walletAddress,
                      chainId: self.chainId,
-                     kycConfig: self.kycConfig?.asReactModel,
-                     accreditedConfig: self.accreditedConfig?.asReactModel,
-                     loginProof: self.loginProof,
-                     isLoggedIn: self.isLoggedIn,
-                     emailAddress: self.emailAddress,
+                     loggedIn: self.loggedIn,
                      emailConfirmed: self.emailConfirmed,
-                     residency: self.residency,
-                     residencyProvided: self.residencyProvided,
-                     emailProvided: self.emailProvided,
                      disclaimerAccepted: self.disclaimerAccepted,
-                     legalEntityStatus: self.legalEntityStatus,
-                     requiredInformationProvided: self.residencyProvided,
+                     requiredInformationProvided: self.requiredInformationProvided,
                      verificationStatus: self.verificationStatus.asReactModel)
     }
 }
@@ -108,5 +100,11 @@ extension VerificationStatus {
         case .notVerified:
             return .notVerified
         }
+    }
+}
+
+extension Wallet {
+    var asReactModel: RNWallet {
+        RNWallet(id: id, name: name, imageURL: imageURL)
     }
 }

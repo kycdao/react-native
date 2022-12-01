@@ -17,7 +17,7 @@ extension Encodable {
         else {
             print(self)
             print(try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed))
-            throw KYCError.genericError
+            throw KycDaoError.genericError
         }
         
         return dictionary
@@ -30,10 +30,15 @@ extension Encodable {
         else {
             print(self)
             print(try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed))
-            throw KYCError.genericError
+            throw KycDaoError.genericError
         }
         
         return dictionary
+    }
+    
+    func toJSON(_ encoder: JSONEncoder = JSONEncoder()) throws -> String {
+        let data = try encoder.encode(self)
+        return String(decoding: data, as: UTF8.self)
     }
     
 }

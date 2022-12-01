@@ -12,6 +12,7 @@ import BigInt
 
 enum KycReactEvents: String, Codable {
     case wcSessionStarted = "WC_SESSION_STARTED"
+    case wcSessionFailed = "WC_SESSION_FAILED"
     case methodPersonalSign = "METHOD_PERSONAL_SIGN"
     case methodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
@@ -32,7 +33,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     
     func personalSign(walletAddress: String, message: String) async throws -> String {
         guard let personalSignHandler = personalSignHandler else {
-            throw KYCError.genericError
+            throw KycDaoError.genericError
         }
 
         personalSignHandler(walletAddress, message)
@@ -43,7 +44,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     
     func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> String {
         guard let sendMintingTransactionHandler = sendMintingTransactionHandler else {
-            throw KYCError.genericError
+            throw KycDaoError.genericError
         }
 
         sendMintingTransactionHandler(walletAddress, mintingProperties)
@@ -105,21 +106,13 @@ struct RNWCURL: Codable {
     var absoluteString: String
 }
 
-struct RNKYCSession: Codable {
+struct RNVerificationSession: Codable {
     var id: String
     var walletAddress: String
     var chainId: String
-    var kycConfig: RNSmartContractConfig?
-    var accreditedConfig: RNSmartContractConfig?
-    var loginProof: String
-    var isLoggedIn: Bool
-    var emailAddress: String?
+    var loggedIn: Bool
     var emailConfirmed: Bool
-    var residency: String?
-    var residencyProvided: Bool
-    var emailProvided: Bool
     var disclaimerAccepted: Bool
-    var legalEntityStatus: Bool
     var requiredInformationProvided: Bool
     var verificationStatus: RNVerificationStatus
 }
@@ -157,4 +150,39 @@ public enum RNVerificationStatus: String, Codable {
     case verified = "VERIFIED"
     case processing = "PROCESSING"
     case notVerified = "NOT_VERIFIED"
+}
+
+public struct RNConfiguration: Decodable {
+    
+    public let apiKey: String
+    public let environment: KycDaoEnvironment
+    public let networkConfigs: [NetworkConfig]
+    
+    public var asNativeModel: Configuration {
+        Configuration(apiKey: apiKey,
+                      environment: environment,
+                      networkConfigs: networkConfigs)
+    }
+    
+}
+
+public struct RNWallet: Identifiable, Hashable, Codable {
+    /// A unique id of the wallet
+    public let id: String
+    /// Name of the wallet app
+    public let name: String
+    /// An url pointing to an icon image of the wallet app
+    public let imageURL: URL?
+}
+
+public struct RNError: Encodable {
+    public let message: String
+    
+    //contains JSON encoded data
+    public let data: String?
+    
+    init(message: String, data: String? = nil) {
+        self.message = message
+        self.data = data
+    }
 }

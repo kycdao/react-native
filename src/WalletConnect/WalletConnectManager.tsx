@@ -1,7 +1,8 @@
 import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import type { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
-import { ErrorEventBody, KycReactEvents, MintingProperties } from "./../KYC/KYCModels";
-import { BaseWalletSession } from './../KYC/BaseWalletSession';
+import { WCSessionError } from  "./WalletConnectModels";
+import { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
+import { ErrorEventBody, KycDaoReactEvents, MintingProperties, RNError } from "../Core/Models";
+import { BaseWalletSession } from '../Core/BaseWalletSession';
 
 const LINKING_ERROR =
   `The package 'react-native-awesome-module' doesn't seem to be linked. Make sure: \n\n` +
@@ -32,37 +33,57 @@ export class WalletConnectManager {
         return WalletConnectManager.instance;
     }
 
-    public onSessionSuccessfullyEstablished(listener: (walletSession: WalletSession) => void): EmitterSubscription {
-        return this.getEventEmitter().addListener(KycReactEvents.WCSessionStarted, event => {
-            var walletSessionData = event as WalletConnectSessionInterface
-            if (walletSessionData !== undefined) {
-                var walletSession = new WalletSession(walletSessionData.id,
-                                                      walletSessionData.url, 
-                                                      walletSessionData.chainId,
-                                                      walletSessionData.walletId,
-                                                      walletSessionData.accounts,
-                                                      walletSessionData.icon,
-                                                      walletSessionData.name);
-                listener(walletSession);
+    public onSessionSuccessfullyEstablished(listener: (err: WCSessionError | null, walletSession?: WalletSession) => void): EmitterSubscription {
+        return this.getEventEmitter().addListener(KycDaoReactEvents.WCSessionStarted, event => {
+            
+            console.log("RECEIVED EVENT SESSION");
+
+            if (RNError.looksLike(event)) {
+
+                console.log("RECEIVED EVENT SESSION 9");
+
+                var errorObject = event as RNError;
+                if ((errorObject.data as Wallet) !== undefined) {
+                    var wallet = errorObject.data as Wallet;
+                    var error = new WCSessionError(errorObject.message, wallet);
+                    listener(error);
+                }
+
+            } else if (WalletConnectSessionInterface.looksLike(event)) {
+
+                console.log("RECEIVED EVENT SESSION 2");
+
+                var walletSessionData = event as WalletConnectSessionInterface;
+                if (walletSessionData !== undefined) {
+                    console.log("RECEIVED EVENT SESSION 3");
+                    var walletSession = new WalletSession(walletSessionData.id,
+                                                        walletSessionData.url, 
+                                                        walletSessionData.chainId,
+                                                        walletSessionData.walletId,
+                                                        walletSessionData.accounts,
+                                                        walletSessionData.icon,
+                                                        walletSessionData.name);
+                    console.log("WALLET SESSION CREATED: " + walletSession);
+                    listener(null, walletSession);
+                }
+
             }
-        })
-        ;
+        });
     }
 
-    public onSessionFailed(listener: (error:ErrorEventBody) => void): EmitterSubscription {
-        return this.getEventEmitter().addListener(KycReactEvents.WCSessionFailed, event => {
-                var error = event as ErrorEventBody
-                listener(error);
-            })
-        ;
-    }
+    // public onSessionFailed(listener: (error:ErrorEventBody) => void): EmitterSubscription {
+    //     return this.getEventEmitter().addListener(KycDaoReactEvents.WCSessionFailed, event => {
+    //             var error = event as ErrorEventBody;
+    //             listener(error);
+    //         });
+    // }
 
     public getEventEmitter(): NativeEventEmitter {
         return new NativeEventEmitter(RNWalletConnectManager);
     }
 
-    public startListening(){
-         RNWalletConnectManager.startListening();
+    public startListening() {
+        RNWalletConnectManager.startListening();
     }
 
     public listWallets(): Promise<[Wallet]> {
@@ -71,10 +92,6 @@ export class WalletConnectManager {
 
     public connect(wallet: Wallet): Promise<void> {
         return RNWalletConnectManager.connect({ ...wallet });
-    }
-
-    public addCustomRpcURL(chainId: string, rpcURL: string){
-        RNWalletConnectManager.addCustomRpcURL(chainId, rpcURL)
     }
 
 }

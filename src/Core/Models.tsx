@@ -1,5 +1,5 @@
 
-export interface KYCSessionInterface {
+export interface VerificationSessionInterface {
     id: string;
     walletAddress: string;
     chainId: string;
@@ -10,7 +10,7 @@ export interface KYCSessionInterface {
     verificationStatus: VerificationStatus;
 }
 
-export interface ErrorEventBody{
+export interface ErrorEventBody {
     message: string;
     errorType: ErrorType;
 }
@@ -29,7 +29,7 @@ export enum Network {
     PolygonMumbai = "eip155:80001",
 }
 
-export enum KycReactEvents {
+export enum KycDaoReactEvents {
     WCSessionStarted = "WC_SESSION_STARTED",
     WCSessionFailed = "WC_SESSION_FAILED",
     MethodHasValidToken ="METHOD_HAS_VALID_TOKEN",
@@ -37,7 +37,7 @@ export enum KycReactEvents {
     MethodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
 
-export enum ErrorType{
+export enum ErrorType {
     FailedToConnectWalletConnect,
 }
 export enum VerificationType {
@@ -141,4 +141,23 @@ export interface CurrencyData {
     symbol: string;
     decimals: number;
     baseToNativeDivisor: string;
+}
+
+export interface RNError {
+    message: string;
+    data?: unknown;
+}
+
+export namespace RNError {
+    export function looksLike(object: any): object is RNError {
+        const error: RNError = object
+        return typeof error.message  === "string"
+            && typeof error.data === "object";
+      }
+}
+
+export interface MintingResult {
+    explorerURL?: string
+    transactionId: string
+    tokenId: string
 }

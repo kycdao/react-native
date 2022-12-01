@@ -6,7 +6,7 @@ Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
 '- You rebuilt the app after installing the package\n' +
 '- You are not using Expo managed workflow\n';
 
-export const RNKYCManager = NativeModules.RNKYCManager  ? NativeModules.RNKYCManager  : new Proxy(
+export const RNVerificationManager = NativeModules.RNVerificationManager  ? NativeModules.RNVerificationManager  : new Proxy(
   {},
   {
     get() {
