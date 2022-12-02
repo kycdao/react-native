@@ -393,7 +393,7 @@ class RNVerificationManager: RCTEventEmitter {
                 let rnGasEstimation = try gasEstimation.asReactModel.encodeToDictionary()
                 resolve(rnGasEstimation)
             } catch let error {
-                reject("estimateGasForMinting", "Failed to estimate gas fee for minting", error)
+                reject("estimateGasForMinting", "Failed to estimate gas fee for minting: \(error)", error)
             }
         }
         

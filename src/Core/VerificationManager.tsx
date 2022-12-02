@@ -63,14 +63,6 @@ export class VerificationManager {
     return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId.chainId);
   }
 
-  // public async hasValidToken(verificationType: VerificationType, walletAddress: string, chainId: string) : Promise<boolean>{
-  //   return await RNVerificationManager.hasValidToken(verificationType, walletAddress, chainId);
-  // }
-
-  // public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSession: WalletSessionInterface) : Promise<boolean>{
-  //   return await RNWalletConnectManager.hasValidTokenWalletSession(verificationType, walletAddress, walletSession)
-  // }
-
 }
 
 export class VerificationSession {
@@ -145,7 +137,7 @@ export class VerificationSession {
   }
 
   public async estimateGasForMinting(): Promise<GasEstimation> {
-    return await RNVerificationManager.estimateGasForMinting({ ...this },3);
+    return await RNVerificationManager.estimateGasForMinting({ ...this });
   }
 
   public async requestMinting(selectedImageId: string) {
