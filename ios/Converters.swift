@@ -70,9 +70,32 @@ extension GasEstimation {
                         amount: amount,
                         gasCurrency: gasCurrency.asReactModel,
                         fee: fee,
-                        feeInNative: feeInNative)
+                        feeText: feeText)
     }
 }
+
+extension PaymentEstimation {
+    var asReactModel: RNPaymentEstimation {
+        RNPaymentEstimation(paymentAmount: paymentAmount,
+                            discountYears: discountYears,
+                            currency: currency,
+                            paymentAmountText: paymentAmountText)
+    }
+}
+
+extension PriceEstimation {
+    var asReactModel: RNPriceEstimation {
+        RNPriceEstimation(paymentAmount: paymentAmount,
+                          gasFee: gasFee,
+                          currency: currency,
+                          finalPrice: finalPrice,
+                          paymentAmountText: paymentAmountText,
+                          gasFeeText: gasFeeText,
+                          finalPriceText: finalPriceText)
+    }
+}
+
+
 
 extension CurrencyData {
     var asReactModel: RNCurrencyData {

@@ -81,12 +81,18 @@ RCT_EXTERN_METHOD(getNFTImages:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(estimateGasForMinting:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(mintingPrice:(NSDictionary)sessionData
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(paymentEstimation:(NSDictionary)sessionData
+                  yearsPurchased:(NSNumber)yearsPurchased
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(requestMinting:(NSDictionary)sessionData
                   selectedImageId:(NSString)selectedImageId
+                  membershipDuration:(NSNumber)membershipDuration
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 

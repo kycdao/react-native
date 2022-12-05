@@ -368,13 +368,17 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
-    @objc(requestMinting:selectedImageId:resolve:reject:)
-    func requestMinting(_ sessionData: [String: Any], selectedImageId: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(requestMinting:selectedImageId:membershipDuration:resolve:reject:)
+    func requestMinting(_ sessionData: [String: Any], selectedImageId: String, membershipDuration membershipDurationSigned: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
+                guard membershipDurationSigned >= 0 else { throw KycDaoError.genericError }
+                
+                let membersipDuration = UInt32(membershipDurationSigned)
+                
                 let session = try fetchSessionFromData(sessionData)
-                try await session.requestMinting(selectedImageId: selectedImageId)
+                try await session.requestMinting(selectedImageId: selectedImageId, membershipDuration: membersipDuration)
                 resolve(())
             } catch let error {
                 reject("requestMinting", "Failed to request minting authorization", error)
@@ -383,17 +387,36 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
-    @objc(estimateGasForMinting:resolve:reject:)
-    func estimateGasForMinting(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(mintingPrice:resolve:reject:)
+    func mintingPrice(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let session = try fetchSessionFromData(sessionData)
-                let gasEstimation = try await session.estimateGasForMinting()
-                let rnGasEstimation = try gasEstimation.asReactModel.encodeToDictionary()
-                resolve(rnGasEstimation)
+                let priceEstimation = try await session.mintingPrice()
+                let rnPriceEstimation = try priceEstimation.asReactModel.encodeToDictionary()
+                resolve(rnPriceEstimation)
             } catch let error {
-                reject("estimateGasForMinting", "Failed to estimate gas fee for minting: \(error)", error)
+                reject("mintingPrice", "Failed to estimate prices for minting: \(error)", error)
+            }
+        }
+        
+    }
+    
+    @objc(paymentEstimation:yearsPurchased:resolve:reject:)
+    func paymentEstimation(_ sessionData: [String: Any], yearsPurchased: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        
+        Task {
+            do {
+                guard yearsPurchased >= 0 else { throw KycDaoError.genericError }
+                
+                let yearsPurchased = UInt32(yearsPurchased)
+                let session = try fetchSessionFromData(sessionData)
+                let paymentEstimation = try await session.paymentEstimation(yearsPurchased: yearsPurchased)
+                let rnPaymentEstimation = try paymentEstimation.asReactModel.encodeToDictionary()
+                resolve(rnPaymentEstimation)
+            } catch let error {
+                reject("paymentEstimation", "Failed to estimate payment for membership: \(error)", error)
             }
         }
         

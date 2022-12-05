@@ -130,8 +130,25 @@ public struct RNGasEstimation: Codable {
     public let amount: BigUInt
     public let gasCurrency: RNCurrencyData
     public var fee: BigUInt
-    public var feeInNative: String
+    public var feeText: String
     
+}
+
+public struct RNPaymentEstimation: Codable {
+    public let paymentAmount: BigUInt
+    public let discountYears: UInt32
+    public let currency: CurrencyData
+    public var paymentAmountText: String
+}
+
+public struct RNPriceEstimation: Codable {
+    public let paymentAmount: BigUInt
+    public let gasFee: BigUInt?
+    public let currency: CurrencyData
+    public var finalPrice: BigUInt
+    public var paymentAmountText: String
+    public var gasFeeText: String?
+    public var finalPriceText: String
 }
 
 public struct RNCurrencyData: Codable {
