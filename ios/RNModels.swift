@@ -115,6 +115,10 @@ struct RNVerificationSession: Codable {
     var disclaimerAccepted: Bool
     var requiredInformationProvided: Bool
     var verificationStatus: RNVerificationStatus
+    var hasMembership: Bool
+    var disclaimerText: String
+    var termsOfServiceURL: String
+    var privacyPolicyURL: String
 }
 
 struct RNSmartContractConfig: Codable {
@@ -135,27 +139,27 @@ public struct RNGasEstimation: Codable {
 }
 
 public struct RNPaymentEstimation: Codable {
-    public let paymentAmount: BigUInt
+    public let paymentAmount: String
     public let discountYears: UInt32
-    public let currency: CurrencyData
+    public let currency: RNCurrencyData
     public var paymentAmountText: String
 }
 
 public struct RNPriceEstimation: Codable {
-    public let paymentAmount: BigUInt
-    public let gasFee: BigUInt?
-    public let currency: CurrencyData
-    public var finalPrice: BigUInt
+    public let paymentAmount: String
+    public let gasFee: String
+    public let currency: RNCurrencyData
+    public var fullPrice: String
     public var paymentAmountText: String
-    public var gasFeeText: String?
-    public var finalPriceText: String
+    public var gasFeeText: String
+    public var fullPriceText: String
 }
 
 public struct RNCurrencyData: Codable {
     public let name: String
     public let symbol: String
     public let decimals: Int
-    public var baseToNativeDivisor: BigUInt
+    public var baseToNativeDivisor: String
 }
 
 public struct RNTokenImage: Codable {
@@ -185,25 +189,27 @@ public enum RNKycDaoEnvironment: String, Codable {
 
 public struct RNConfiguration: Decodable {
     
-    public let apiKey: String
+//    public let apiKey: String
     public let environment: KycDaoEnvironment
     public let networkConfigs: [NetworkConfig]
     
     public var asNativeModel: Configuration {
-        Configuration(apiKey: apiKey,
-                      environment: environment,
-                      networkConfigs: networkConfigs)
+        Configuration(
+//            apiKey: apiKey,
+            environment: environment,
+            networkConfigs: networkConfigs
+        )
     }
     
     enum CodingKeys: CodingKey {
-        case apiKey
+//        case apiKey
         case environment
         case networkConfigs
     }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.apiKey = try container.decode(String.self, forKey: .apiKey)
+//        self.apiKey = try container.decode(String.self, forKey: .apiKey)
         let env = try container.decode(RNKycDaoEnvironment.self, forKey: .environment)
         self.environment = env.asNativeModel
         self.networkConfigs = try container.decode([NetworkConfig].self, forKey: .networkConfigs)
@@ -230,4 +236,16 @@ public struct RNError: Encodable {
         self.message = message
         self.data = data
     }
+}
+
+public struct RNMintingResult: Codable {
+    public let tokenId: String
+    public let transactionId: String
+    public let explorerURL: String?
+    public let imageURL: String?
+}
+
+public struct RNPersonalData: Codable {
+    public let email: String
+    public let residency: String
 }

@@ -63,7 +63,7 @@ class RNVerificationManager: RCTEventEmitter {
                 resolve(())
                 
             } catch let error {
-                reject("configure", "Failed to configure, invalid configuration data: \(configurationData)", error)
+                reject("configure", "Failed to configure, invalid configuration data: \(configurationData) error: \(error.localizedDescription)", error)
             }
         }
         
@@ -248,11 +248,9 @@ class RNVerificationManager: RCTEventEmitter {
         }
     }
     
-    @objc(setPersonalData:email:residency:legalEntity:resolve:reject:)
+    @objc(setPersonalData:personalDataRaw:resolve:reject:)
     func setPersonalData(_ sessionData: [String: Any],
-                         email: String,
-                         residency: String,
-                         legalEntity: Bool,
+                         personalData: [String: Any],
                          resolve: @escaping RCTPromiseResolveBlock,
                          reject: @escaping RCTPromiseRejectBlock
     ) {
@@ -260,31 +258,55 @@ class RNVerificationManager: RCTEventEmitter {
             do {
                 
                 let session = try fetchSessionFromData(sessionData)
-                let personalData = PersonalData(email: email, residency: residency, legalEntity: legalEntity)
-                try await session.setPersonalData(personalData)
+                let rnPersonalData = try RNPersonalData.decode(from: personalData)
+                try await session.setPersonalData(
+                    PersonalData(email: rnPersonalData.email,
+                                 residency: rnPersonalData.email)
+                )
                 resolve(())
                 
             } catch let error {
                 
-                reject("update", "User update failed", error)
+                reject("setPersonalData", "Setting personal data failed", error)
                 
             }
         }
     }
     
-    @objc(sendConfirmationEmail:resolve:reject:)
-    func sendConfirmationEmail(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(updateEmail:email:resolve:reject:)
+    func updateEmail(_ sessionData: [String: Any],
+                     email: String,
+                     resolve: @escaping RCTPromiseResolveBlock,
+                     reject: @escaping RCTPromiseRejectBlock
+    ) {
+        Task {
+            do {
+                
+                let session = try fetchSessionFromData(sessionData)
+                try await session.updateEmail(email)
+                resolve(())
+                
+            } catch let error {
+                
+                reject("updateEmail", "Update email failed", error)
+                
+            }
+        }
+    }
+    
+    @objc(resendConfirmationEmail:resolve:reject:)
+    func resendConfirmationEmail(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 
                 let session = try fetchSessionFromData(sessionData)
-                try await session.sendConfirmationEmail()
+                try await session.resendConfirmationEmail()
                 resolve(())
                 
             } catch let error {
                 
-                reject("sendConfirmationEmail", "Failed to send confirmation email", error)
+                reject("resendConfirmationEmail", "Failed to resend confirmation email", error)
                 
             }
         }
@@ -348,6 +370,20 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
+    @objc(getMembershipCostPerYear:resolve:reject:)
+    func getMembershipCostPerYear(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        
+        Task {
+            do {
+                let session = try fetchSessionFromData(sessionData)
+                let costPerYear = try await session.getMembershipCostPerYear()
+                resolve(costPerYear)
+            } catch let error {
+                reject("getMembershipCostPerYear", "Failed to get cost per year: \(error)", error)
+            }
+        }
+    }
+    
     @objc(getNFTImages:resolve:reject:)
     func getNFTImages(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
@@ -369,50 +405,48 @@ class RNVerificationManager: RCTEventEmitter {
     }
     
     @objc(requestMinting:selectedImageId:membershipDuration:resolve:reject:)
-    func requestMinting(_ sessionData: [String: Any], selectedImageId: String, membershipDuration membershipDurationSigned: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    func requestMinting(_ sessionData: [String: Any], selectedImageId: String, membershipDuration membershipDurationSigned: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
-                guard membershipDurationSigned >= 0 else { throw KycDaoError.genericError }
-                
-                let membersipDuration = UInt32(membershipDurationSigned)
+                let membershipDuration = UInt32(exactly: membershipDurationSigned)
+                guard let membershipDuration else { throw KycDaoError.genericError }
                 
                 let session = try fetchSessionFromData(sessionData)
-                try await session.requestMinting(selectedImageId: selectedImageId, membershipDuration: membersipDuration)
+                try await session.requestMinting(selectedImageId: selectedImageId, membershipDuration: membershipDuration)
                 resolve(())
             } catch let error {
-                reject("requestMinting", "Failed to request minting authorization", error)
+                reject("requestMinting", "Failed to request minting authorization: \(error.localizedDescription)", error)
             }
         }
         
     }
     
-    @objc(mintingPrice:resolve:reject:)
-    func mintingPrice(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(getMintingPrice:resolve:reject:)
+    func getMintingPrice(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let session = try fetchSessionFromData(sessionData)
-                let priceEstimation = try await session.mintingPrice()
+                let priceEstimation = try await session.getMintingPrice()
                 let rnPriceEstimation = try priceEstimation.asReactModel.encodeToDictionary()
                 resolve(rnPriceEstimation)
             } catch let error {
                 reject("mintingPrice", "Failed to estimate prices for minting: \(error)", error)
             }
         }
-        
     }
     
-    @objc(paymentEstimation:yearsPurchased:resolve:reject:)
-    func paymentEstimation(_ sessionData: [String: Any], yearsPurchased: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(estimatePayment:yearsPurchased:resolve:reject:)
+    func estimatePayment(_ sessionData: [String: Any], yearsPurchased: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
-                guard yearsPurchased >= 0 else { throw KycDaoError.genericError }
+                let yearsPurchased = UInt32(exactly: yearsPurchased)
+                guard let yearsPurchased else { throw KycDaoError.genericError }
                 
-                let yearsPurchased = UInt32(yearsPurchased)
                 let session = try fetchSessionFromData(sessionData)
-                let paymentEstimation = try await session.paymentEstimation(yearsPurchased: yearsPurchased)
+                let paymentEstimation = try await session.estimatePayment(yearsPurchased: yearsPurchased)
                 let rnPaymentEstimation = try paymentEstimation.asReactModel.encodeToDictionary()
                 resolve(rnPaymentEstimation)
             } catch let error {
@@ -431,16 +465,16 @@ class RNVerificationManager: RCTEventEmitter {
                 print(sessionData)
                 
                 let session = try fetchSessionFromData(sessionData)
-                try await session.mint()
-                resolve(())
+                let mintingResult = try await session.mint()
+                let rnMintingResult = try mintingResult.asReactModel.encodeToDictionary()
+                resolve(rnMintingResult)
                 
             } catch let error {
                 
-                reject("mint", "Failed to mint with wallet", error)
+                reject("mint", "Failed to mint", error)
                 
             }
         }
-        
     }
     
     @objc(freshSessionData:resolve:reject:)

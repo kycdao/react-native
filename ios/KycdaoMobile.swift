@@ -26,13 +26,13 @@ class KycdaoMobile: NSObject {
     
     @objc(launchKycFlow)
     func launchKycFlow() {
-        DispatchQueue.main.async {
-            
-            let kycViewController = KycDaoViewController()
-            guard let keyWindow = UIWindowScene.focused?.windows.first(where: { $0.isKeyWindow }) else { return }
-        
-            keyWindow.rootViewController?.present(kycViewController, animated: true)
-        }
+//        DispatchQueue.main.async {
+//            
+//            let kycViewController = KycDaoViewController()
+//            guard let keyWindow = UIWindowScene.focused?.windows.first(where: { $0.isKeyWindow }) else { return }
+//        
+//            keyWindow.rootViewController?.present(kycViewController, animated: true)
+//        }
     }
     
 }

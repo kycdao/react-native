@@ -42,14 +42,18 @@ extension WCURL {
 
 extension VerificationSession {
     var asReactModel: RNVerificationSession {
-        RNVerificationSession(id: self.id,
-                     walletAddress: self.walletAddress,
-                     chainId: self.chainId,
-                     loggedIn: self.loggedIn,
-                     emailConfirmed: self.emailConfirmed,
-                     disclaimerAccepted: self.disclaimerAccepted,
-                     requiredInformationProvided: self.requiredInformationProvided,
-                     verificationStatus: self.verificationStatus.asReactModel)
+        RNVerificationSession(id: id,
+                              walletAddress: walletAddress,
+                              chainId: chainId,
+                              loggedIn: loggedIn,
+                              emailConfirmed: emailConfirmed,
+                              disclaimerAccepted: disclaimerAccepted,
+                              requiredInformationProvided: requiredInformationProvided,
+                              verificationStatus: verificationStatus.asReactModel,
+                              hasMembership: hasMembership,
+                              disclaimerText: disclaimerText,
+                              termsOfServiceURL: termsOfService.absoluteString,
+                              privacyPolicyURL: privacyPolicy.absoluteString)
     }
 }
 
@@ -76,22 +80,22 @@ extension GasEstimation {
 
 extension PaymentEstimation {
     var asReactModel: RNPaymentEstimation {
-        RNPaymentEstimation(paymentAmount: paymentAmount,
+        RNPaymentEstimation(paymentAmount: "\(paymentAmount)",
                             discountYears: discountYears,
-                            currency: currency,
+                            currency: currency.asReactModel,
                             paymentAmountText: paymentAmountText)
     }
 }
 
 extension PriceEstimation {
     var asReactModel: RNPriceEstimation {
-        RNPriceEstimation(paymentAmount: paymentAmount,
-                          gasFee: gasFee,
-                          currency: currency,
-                          finalPrice: finalPrice,
+        RNPriceEstimation(paymentAmount: "\(paymentAmount)",
+                          gasFee: "\(gasFee)",
+                          currency: currency.asReactModel,
+                          fullPrice: "\(fullPrice)",
                           paymentAmountText: paymentAmountText,
                           gasFeeText: gasFeeText,
-                          finalPriceText: finalPriceText)
+                          fullPriceText: fullPriceText)
     }
 }
 
@@ -99,10 +103,10 @@ extension PriceEstimation {
 
 extension CurrencyData {
     var asReactModel: RNCurrencyData {
-        RNCurrencyData(name: name,
+        return RNCurrencyData(name: name,
                        symbol: symbol,
                        decimals: decimals,
-                       baseToNativeDivisor: baseToNativeDivisor)
+                       baseToNativeDivisor: "\(baseToNativeDivisor)")
     }
 }
 
@@ -129,5 +133,14 @@ extension VerificationStatus {
 extension Wallet {
     var asReactModel: RNWallet {
         RNWallet(id: id, name: name, imageURL: imageURL)
+    }
+}
+
+extension MintingResult {
+    var asReactModel: RNMintingResult {
+        RNMintingResult(tokenId: tokenId,
+                        transactionId: transactionId,
+                        explorerURL: explorerURL?.absoluteString,
+                        imageURL: imageURL?.absoluteString)
     }
 }

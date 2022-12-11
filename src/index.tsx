@@ -1,12 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
-export { WalletConnectManager, WalletSession } from './WalletConnect/WalletConnectManager';
+export { 
+  WalletConnectManager, 
+  WalletConnectSession,
+  WCSessionError 
+} from './WalletConnect/WalletConnectManager';
 export { 
   VerificationManager, 
   VerificationSession, 
-  Network, 
+  BaseWalletSession,
   IdentityFlowResult, 
   VerificationStatus, 
-  PersonalData 
+  PersonalData
 } from './Core/VerificationManager';
 export { NetworkConfig, VerificationType, KycDaoEnvironment, Configuration} from './Core/Models'
 

@@ -55,13 +55,16 @@ RCT_EXTERN_METHOD(acceptDisclaimer:(NSDictionary)sessionData
                   reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setPersonalData:(NSDictionary)sessionData
-                  email:(NSString)email
-                  residency:(NSString)residency
-                  legalEntity:(BOOL)legalEntity
+                  personalData:(NSDictionary)personalData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(sendConfirmationEmail:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(updateEmail:(NSDictionary)sessionData
+                  email:(NSString)email
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(resendConfirmationEmail:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
@@ -81,18 +84,22 @@ RCT_EXTERN_METHOD(getNFTImages:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(mintingPrice:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(getMembershipCostPerYear:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(paymentEstimation:(NSDictionary)sessionData
-                  yearsPurchased:(NSNumber)yearsPurchased
+RCT_EXTERN_METHOD(getMintingPrice:(NSDictionary)sessionData
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(estimatePayment:(NSDictionary)sessionData
+                  yearsPurchased:(nonnull NSNumber)yearsPurchased
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(requestMinting:(NSDictionary)sessionData
                   selectedImageId:(NSString)selectedImageId
-                  membershipDuration:(NSNumber)membershipDuration
+                  membershipDuration:(nonnull NSNumber)membershipDuration
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
