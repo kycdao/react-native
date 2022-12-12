@@ -1,8 +1,9 @@
 import { EmitterSubscription, NativeEventEmitter, NativeModules, Platform } from 'react-native';
-import { WCSessionError } from  "./WalletConnectModels";
-import { Wallet, WCURL, WalletConnectSessionInterface } from  "./WalletConnectModels";
+import { Wallet, WCURL, WalletConnectSessionInterface, WCSessionError } from  "./WalletConnectModels";
 import { KycDaoReactEvents, MintingProperties, RNError } from "../Core/Models";
 import { BaseWalletSession } from '../Core/BaseWalletSession';
+
+export { WCSessionError };
 
 const LINKING_ERROR =
   `The package 'react-native-awesome-module' doesn't seem to be linked. Make sure: \n\n` +
@@ -34,7 +35,7 @@ export class WalletConnectManager {
     }
 
     public subscribeOnSession(
-        start: (walletSession?: WalletSession) => void, 
+        start: (walletSession: WalletConnectSession) => void, 
         failure: (err: WCSessionError) => void
     ): EmitterSubscription {
 
@@ -60,7 +61,7 @@ export class WalletConnectManager {
                 var walletSessionData = event as WalletConnectSessionInterface;
                 if (walletSessionData !== undefined) {
                     console.log("RECEIVED EVENT SESSION 3");
-                    var walletSession = new WalletSession(walletSessionData.id,
+                    var walletSession = new WalletConnectSession(walletSessionData.id,
                                                         walletSessionData.url, 
                                                         walletSessionData.chainId,
                                                         walletSessionData.walletId,
@@ -100,7 +101,7 @@ export class WalletConnectManager {
 
 }
 
-export class WalletSession extends BaseWalletSession {
+export class WalletConnectSession extends BaseWalletSession {
     url: WCURL;
     walletId?: string;
     accounts?: [string];

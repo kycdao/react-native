@@ -47,7 +47,7 @@ class RNWalletConnectManager: RCTEventEmitter {
         
         guard sessionStartedCancellable == nil else { return }
         
-        sessionStartedCancellable = WalletConnectManager.shared.sessionStarted.sink { [weak self] result in
+        sessionStartedCancellable = WalletConnectManager.shared.sessionStart.sink { [weak self] result in
             
             guard self?.hasListeners == true else { return }
             switch result {

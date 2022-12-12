@@ -2,7 +2,7 @@ PODS:
   - BigInt (5.0.0)
   - boost (1.76.0)
   - CocoaAsyncSocket (7.6.5)
-  - CombineExt (1.7.0)
+  - CombineExt (1.8.0)
   - CryptoSwift (1.6.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.70.3)
@@ -79,14 +79,15 @@ PODS:
   - glog (0.3.5)
   - hermes-engine (0.70.3)
   - KycDao (0.1.0):
-    - CombineExt (~> 1.7.0)
+    - CombineExt (~> 1.8.0)
     - PersonaInquirySDK2 (~> 2.3.0)
     - WalletConnectSwift (~> 1.7.0)
-    - web3.swift (~> 1.2.0)
+    - web3.swift (~> 1.4.0)
   - kycdao-mobile (0.1.0):
     - KycDao
     - React-Core
   - libevent (2.1.12)
+  - Logging (1.0.0)
   - OpenSSL-Universal (1.1.1100)
   - PersonaInquirySDK2 (2.3.11)
   - RCT-Folly (2021.07.22.00):
@@ -385,9 +386,10 @@ PODS:
   - SocketRocket (0.6.0)
   - WalletConnectSwift (1.7.0):
     - CryptoSwift (~> 1.5)
-  - web3.swift (1.2.0):
+  - web3.swift (1.4.1):
     - BigInt (~> 5.0.0)
     - GenericJSON (~> 2.0)
+    - Logging (~> 1.0.0)
     - secp256k1.swift (~> 0.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -475,6 +477,7 @@ SPEC REPOS:
     - fmt
     - GenericJSON
     - libevent
+    - Logging
     - OpenSSL-Universal
     - PersonaInquirySDK2
     - secp256k1.swift
@@ -561,9 +564,9 @@ SPEC CHECKSUMS:
   BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  CombineExt: 0e7c19f7ce51d2e07d624913d20ea4d10fafe280
+  CombineExt: c4daa97ef75754d8ef319bd79edeef82652f3eea
   CryptoSwift: 562f8eceb40e80796fffc668b0cad9313284cfa6
-  DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
+  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: 3b313c3fb52b597f7a9b430798e6367d2b9f07e5
   FBReactNativeSpec: 99a7ecb7e9665d96f2fea706b0844e2f3117f381
   Flipper: 26fc4b7382499f1281eb8cb921e5c3ad6de91fe0
@@ -577,11 +580,12 @@ SPEC CHECKSUMS:
   FlipperKit: cbdee19bdd4e7f05472a66ce290f1b729ba3cb86
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   GenericJSON: 79a840eeb77030962e8cf02a62d36bd413b67626
-  glog: 476ee3e89abb49e07f822b48323c51c57124b572
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: bb344d89a0d14c2c91ad357480a79698bb80e186
-  KycDao: 21e2c5e56cc31e3487b9c51273cd1be9b5889d2f
+  KycDao: d8107111fd6e318afd658991bf9155b3631c97ce
   kycdao-mobile: 222310df37f0156d1efa179764041d993600ce8e
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  Logging: 9ef4ecb546ad3169398d5a723bc9bea1c46bef26
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   PersonaInquirySDK2: d30a26a58b22971bcafd1b5b647019eaeae47ec8
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
@@ -614,7 +618,7 @@ SPEC CHECKSUMS:
   secp256k1.swift: a7e7a214f6db6ce5db32cc6b2b45e5c4dd633634
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   WalletConnectSwift: 6309bf3011b0b30e3e9d1e7449535302a9240f71
-  web3.swift: 5b1c6275d92cfa60e4365159057bd63a83dfb9bd
+  web3.swift: 82f5f5bd5b4983e155982080d4bfbfbc5e56e92a
   Yoga: 2ed968a4f060a92834227c036279f2736de0fce3
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

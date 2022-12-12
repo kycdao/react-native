@@ -8,26 +8,22 @@ export interface VerificationSessionInterface {
     disclaimerAccepted: boolean;
     requiredInformationProvided: boolean;
     verificationStatus: VerificationStatus;
+    hasMembership: boolean;
+    disclaimerText: string;
+    termsOfServiceURL: string;
+    privacyPolicyURL: string;
 }
   
 export interface SmartContractConfig {
     address: string;
     paymentDiscountPercent: number;
     verificationType: string;
-    network: Network;
-}
-  
-export enum Network {
-    EthereumMainnet = "eip155:1",
-    CeloMainnet = "eip155:42220",
-    CeloAlfajores = "eip155:44787",
-    PolygonMumbai = "eip155:80001",
+    network: string;
 }
 
 export enum KycDaoReactEvents {
     WCSessionStarted = "WC_SESSION_STARTED",
     WCSessionFailed = "WC_SESSION_FAILED",
-    MethodHasValidToken ="METHOD_HAS_VALID_TOKEN",
     MethodPersonalSign = "METHOD_PERSONAL_SIGN",
     MethodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
@@ -35,6 +31,7 @@ export enum KycDaoReactEvents {
 export enum ErrorType {
     FailedToConnectWalletConnect,
 }
+
 export enum VerificationType {
     KYC = "KYC",
     AccreditedInvestor = "AccreditedInvestor"
@@ -56,21 +53,19 @@ export interface MintingProperties {
     contractABI: string;
     gasAmount: string;
     gasPrice: string;
+    paymentAmount?: string;
 }
 
 export class PersonalData{
     email: string;
     residency: string;
-    isLegalEntity : boolean;
 
     constructor(
         email: string,
         residency: string,
-        isLegalEntity: boolean
-    ){
+    ) {
         this.email = email
         this.residency = residency
-        this.isLegalEntity = isLegalEntity
     }
 }
 
@@ -96,16 +91,16 @@ export interface WalletSessionInterface {
     sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
 }
 
-export interface MethodHasValidTokenParams {
-    verificationType: VerificationType,
-    walletAddress: string,
-    networkOption: NetworkConfig
-}
-export interface MethodHasValidTokenWalletSessionParams {
-    verificationType: VerificationType,
-    walletAddress: string,
-    walletSession: WalletSessionInterface
-}
+// export interface MethodHasValidTokenParams {
+//     verificationType: VerificationType,
+//     walletAddress: string,
+//     networkOption: NetworkConfig
+// }
+// export interface MethodHasValidTokenWalletSessionParams {
+//     verificationType: VerificationType,
+//     walletAddress: string,
+//     walletSession: WalletSessionInterface
+// }
 
 export interface MethodPersonalSignParams {
     id: string;
@@ -124,12 +119,21 @@ export interface TokenImage {
     url?: string;
 }
 
-export interface GasEstimation {
-    price: string;
-    amount: string;
-    gasCurrency: CurrencyData;
-    fee: string;
-    feeInNative: string;
+export interface PaymentEstimation {
+    paymentAmount: string;
+    discountYears: number;
+    currency: CurrencyData;
+    paymentAmountText: string;
+}
+
+export interface PriceEstimation {
+    paymentAmount: string;
+    gasFee: string;
+    currency: CurrencyData;
+    fullPrice: string;
+    paymentAmountText: string;
+    gasFeeText: string;
+    fullPriceText: string;
 }
 
 export interface CurrencyData {
@@ -153,9 +157,10 @@ export namespace RNError {
 }
 
 export interface MintingResult {
-    explorerURL?: string
-    transactionId: string
-    tokenId: string
+    transactionId: string;
+    tokenId: string;
+    imageURL?: string;
+    explorerURL?: string;
 }
 
 export enum KycDaoEnvironment {
@@ -164,16 +169,16 @@ export enum KycDaoEnvironment {
 }
 
 export class Configuration {
-    apiKey: string;
+    // apiKey: string;
     environment: KycDaoEnvironment;
     networkConfigs: NetworkConfig[];
 
     constructor(
-        apiKey: string,
+        // apiKey: string,
         environment: KycDaoEnvironment,
         networkConfigs: NetworkConfig[] = []
     ){
-        this.apiKey = apiKey
+        //  this.apiKey = apiKey
         this.environment = environment
         this.networkConfigs = networkConfigs
     }

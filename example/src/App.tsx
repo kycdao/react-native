@@ -5,25 +5,27 @@ import {
   multiply, 
   printStuff, 
   WalletConnectManager, 
-  WalletSession, 
+  WalletConnectSession, 
   VerificationManager, 
   IdentityFlowResult, 
   VerificationStatus, 
   PersonalData, 
   VerificationType, 
-  NetworkConfig, 
-  WalletConnectSessionInterface, 
+  NetworkConfig,
   WCSessionError,
   Configuration,
-  KycDaoEnvironment
+  KycDaoEnvironment,
+  BaseWalletSession
 } from 'kycdao-mobile';
-// import type { WalletConnectSessionInterface } from 'src/WalletConnect/WalletConnectModels';
 
-const configuration = new Configuration("", KycDaoEnvironment.Dev);
+const configuration = new Configuration(
+  KycDaoEnvironment.Dev, 
+  [new NetworkConfig("eip155:80001", "https://matic-mumbai.chainstacklabs.com")]
+);
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
-  const walletSessionRef = React.useRef<WalletConnectSessionInterface>();
+  const walletSessionRef = React.useRef<BaseWalletSession>();
 
   React.useEffect(() => {
 
@@ -36,19 +38,8 @@ export default function App() {
     configure().catch(console.error);;
     
     var walletConnectManager = WalletConnectManager.getInstance();
-    // walletConnectManager.addCustomRpcURL(
-    //   "eip155:80001", "https://polygon-rpc.com"
-    // )
 
-    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(
-      async (walletSession: WalletSession) => {
-
-      }, 
-      async (error: WCSessionError) => {
-
-      });
-
-    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(async (walletSession: WalletSession) => {
+    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
       console.log("RECEIVED SESSION UPDATE");
 
       walletSessionRef.current = walletSession;
@@ -58,35 +49,42 @@ export default function App() {
       console.log(verificationSession);
       console.log("VERIFICATIONSESSION CREATED");
 
-      if (verificationSession.loggedIn == false) {
+      if (verificationSession.loggedIn === false) {
         await verificationSession.login();
         console.log("REACT DEBUG: LOGING IN");
-
       }
       console.log("REACT DEBUG: LOGGED IN");
 
+      console.log(verificationSession.disclaimerText);
+      console.log(verificationSession.termsOfServiceURL);
+      console.log(verificationSession.privacyPolicyURL);
 
-      if (verificationSession.requiredInformationProvided == false) {
+      if (verificationSession.disclaimerAccepted === false) {
         await verificationSession.acceptDisclaimer();
+      }
+
+      if (verificationSession.requiredInformationProvided === false) {
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
         var personalData = new PersonalData(
-          "robin@bitraptors.com", "HU", false
+          "robin@bitraptors.com", "HU"
         );
         await verificationSession.setPersonalData(personalData);
         console.log("REACT DEBUG: UPDATE USER");
       }
+
       console.log("REACT DEBUG: REQUIRED INFORMATION AVAILABLE");
 
-      if (verificationSession.emailConfirmed == false) {
+      if (verificationSession.emailConfirmed === false) {
         console.log("REACT DEBUG: SEND CONFIRM EMAIL");
         await verificationSession.resumeOnEmailConfirmed();
         console.log("REACT DEBUG: CONTINUE WHEN EMAIL CONFIRMED");
       }
+
       console.log("REACT DEBUG: EMAIL IS OK");
       console.log(verificationSession.verificationStatus);
       console.log(verificationSession.verificationStatus === VerificationStatus.NotVerified);
 
-      if (verificationSession.verificationStatus == VerificationStatus.NotVerified) {
+      if (verificationSession.verificationStatus === VerificationStatus.NotVerified) {
         console.log("REACT DEBUG: before identification");
         let identificationStatus = await verificationSession.startIdentification();
         console.log("REACT DEBUG: startIdentification");
@@ -95,26 +93,39 @@ export default function App() {
         console.log("REACT DEBUG:" + identificationStatus == IdentityFlowResult.Completed);
 
 
-        if (identificationStatus == IdentityFlowResult.Completed) {
+        if (identificationStatus === IdentityFlowResult.Completed) {
           await verificationSession.resumeOnVerificationCompleted();
           console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
         } else {
           console.log("REACT DEBUG: Identity flow cancelled!");
           return;
         }
-      }
-      else if (verificationSession.verificationStatus == VerificationStatus.Processing) {
+      } else if (verificationSession.verificationStatus === VerificationStatus.Processing) {
         await verificationSession.resumeOnVerificationCompleted();
         console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
       }
-      console.log("IT'S MINTING TIME");
+
+      if (verificationSession.hasMembership === false) {
+        console.log("REACT DEBUG: DOES NOT HAVE MEMBERSHIP");
+        let membershipCostPerYear = await verificationSession.getMembershipCostPerYear();
+        console.log(membershipCostPerYear);
+        console.log("MEMBERSHIP COST PER YEAR: " + membershipCostPerYear);
+        let paymentEstimation = await verificationSession.estimatePayment(3);
+        console.log("PAYMENT ESTIMATION: " + paymentEstimation.paymentAmountText);
+        console.log(paymentEstimation);
+      }
+
+      console.log("IT'S MINTING TIME"); //Bravo Vince
       let images = await verificationSession.getNFTImages();
       console.log("REACT DEBUG: GOT IMAGES " + images);
-      await verificationSession.requestMinting(images[0].id);
+      await verificationSession.requestMinting(images[0].id, 3);
       console.log("REACT DEBUG: GOT MINTING AUTH");
-      var estimation = await verificationSession.estimateGasForMinting();
-      console.log("REACT PRICE:" + estimation.feeInNative);
+      var estimation = await verificationSession.getMintingPrice();
+      console.log("REACT PRICE:" + estimation.fullPriceText);
+      console.log(estimation);
+
       var mintingResult = await verificationSession.mint();
+      console.log(mintingResult);
       console.log("URI:" + mintingResult.explorerURL);
       console.log("REACT DEBUG: Hurray");
 
@@ -123,7 +134,7 @@ export default function App() {
     async (error: WCSessionError) => {
       console.error(error);
     });
-    
+
     walletConnectManager.startListening();
     return function cleanup() {
       this.sessionStartSubscription.remove();
@@ -167,17 +178,16 @@ export default function App() {
         onPress={async () => {
           console.log("Pressed:")
           console.log(walletSessionRef.current)
-          /*if (walletSessionRef.current != undefined) {
-            var res = await KYCManager.getInstance().hasValidTokenWalletSession(
-              {
-                verificationType: VerificationType.KYC,
-                walletAddress: walletSessionRef.current.accounts[0],
-                walletSession: walletSessionRef.current
-              }
-            )
+          if (walletSessionRef.current !== undefined) {
+            var res = await VerificationManager.getInstance()
+              .hasValidToken(
+                VerificationType.KYC,
+                walletSessionRef.current.accounts[0],
+                walletSessionRef.current
+              )
             console.log(res)
             Alert.alert("Has valid token?", res ? "yes" : "no")
-          }*/
+          }
         }}
       />
     </SafeAreaView>

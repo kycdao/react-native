@@ -1,20 +1,23 @@
 import { RNVerificationManager } from '../RNVerificationManager';
-import { RNWalletConnectManager } from '../WalletConnect/WalletConnectManager';
 import type { 
   VerificationStatus, 
   VerificationSessionInterface, 
   WalletSessionInterface, 
   IdentityFlowResult, 
-  GasEstimation, 
+  PaymentEstimation,
+  PriceEstimation, 
   TokenImage, 
   PersonalData, 
-  MethodHasValidTokenParams, 
-  MethodHasValidTokenWalletSessionParams, 
+  // MethodHasValidTokenParams, 
+  // MethodHasValidTokenWalletSessionParams, 
   MintingResult, 
   Configuration,
+  VerificationType
 } from  "./Models";
-export type { Network } from "./Models";
+import type { BaseWalletSession } from './BaseWalletSession';
+
 export { IdentityFlowResult, VerificationStatus, PersonalData, Configuration, KycDaoEnvironment } from "./Models";
+export { BaseWalletSession }
 
 export class VerificationManager {
 
@@ -34,7 +37,7 @@ export class VerificationManager {
      await RNVerificationManager.configure({ ... configuration });
   }
 
-  public async createSession(walletAddress: string, walletSession: WalletSessionInterface): Promise<VerificationSession> {
+  public async createSession(walletAddress: string, walletSession: BaseWalletSession): Promise<VerificationSession> {
     var sessionData = await RNVerificationManager.createSession(walletAddress, { ...walletSession }) as VerificationSessionInterface;
     if (sessionData !== undefined) {
       return new VerificationSession(sessionData.id, 
@@ -45,6 +48,10 @@ export class VerificationManager {
                             sessionData.disclaimerAccepted,
                             sessionData.requiredInformationProvided,
                             sessionData.verificationStatus,
+                            sessionData.hasMembership,
+                            sessionData.disclaimerText,
+                            sessionData.termsOfServiceURL,
+                            sessionData.privacyPolicyURL,
                             walletSession,
                             );
     }
@@ -52,11 +59,14 @@ export class VerificationManager {
     throw TypeError("Native model of KYCSession does not match the TypeScript model");
   }
 
-  public async hasValidToken(params: MethodHasValidTokenParams) : Promise<boolean>{
-    return await RNVerificationManager.hasValidToken(params)
-  }
-  public async hasValidTokenWalletSession(params: MethodHasValidTokenWalletSessionParams) : Promise<boolean>{
-    return await RNWalletConnectManager.hasValidTokenWalletSession(params)
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, chainId: string) : Promise<boolean>;
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSession: WalletSessionInterface) : Promise<boolean>;
+  
+  public async hasValidToken(verificationType: VerificationType, walletAddress: string, walletSessionOrChainId: WalletSessionInterface | string) : Promise<boolean> {
+    if (typeof walletSessionOrChainId === 'string') {
+      return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId);
+    }
+    return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId.chainId);
   }
 
 }
@@ -71,7 +81,11 @@ export class VerificationSession {
   disclaimerAccepted: boolean;
   requiredInformationProvided: boolean;
   verificationStatus: VerificationStatus;
-  walletSession: WalletSessionInterface;
+  hasMembership: boolean;
+  disclaimerText: string;
+  termsOfServiceURL: string;
+  privacyPolicyURL: string;
+  walletSession: BaseWalletSession;
 
   constructor(
     id: string,
@@ -82,17 +96,25 @@ export class VerificationSession {
     disclaimerAccepted: boolean, 
     requiredInformationProvided: boolean, 
     verificationStatus: VerificationStatus,
-    walletSession: WalletSessionInterface,
+    hasMembership: boolean,
+    disclaimerText: string,
+    termsOfServiceURL: string,
+    privacyPolicyURL: string,
+    walletSession: BaseWalletSession,
   ) {
-    this.id = id
-    this.walletAddress = walletAddress
-    this.chainId = chainId
-    this.loggedIn = loggedIn
-    this.emailConfirmed = emailConfirmed
-    this.disclaimerAccepted = disclaimerAccepted
-    this.requiredInformationProvided = requiredInformationProvided
-    this.verificationStatus = verificationStatus
-    this.walletSession = walletSession
+    this.id = id;
+    this.walletAddress = walletAddress;
+    this.chainId = chainId;
+    this.loggedIn = loggedIn;
+    this.emailConfirmed = emailConfirmed;
+    this.disclaimerAccepted = disclaimerAccepted;
+    this.requiredInformationProvided = requiredInformationProvided;
+    this.verificationStatus = verificationStatus;
+    this.hasMembership = hasMembership;
+    this.disclaimerText = disclaimerText;
+    this.termsOfServiceURL = termsOfServiceURL;
+    this.privacyPolicyURL = privacyPolicyURL;
+    this.walletSession = walletSession;
   }
 
   public async login() {
@@ -112,8 +134,8 @@ export class VerificationSession {
     await RNVerificationManager.setPersonalData({ ...this }, personalData);
   }
 
-  public async sendConfirmationEmail() {
-    await RNVerificationManager.sendConfirmationEmail({ ...this });
+  public async resendConfirmationEmail() {
+    await RNVerificationManager.resendConfirmationEmail({ ...this });
   }
 
   public async resumeOnEmailConfirmed() {
@@ -132,12 +154,20 @@ export class VerificationSession {
     return await RNVerificationManager.getNFTImages({ ...this });
   }
 
-  public async estimateGasForMinting(): Promise<GasEstimation> {
-    return await RNVerificationManager.estimateGasForMinting({ ...this },3);
+  public async getMembershipCostPerYear(): Promise<number> {
+    return await RNVerificationManager.getMembershipCostPerYear({ ...this });
   }
 
-  public async requestMinting(selectedImageId: string) {
-    await RNVerificationManager.requestMinting({ ...this }, selectedImageId);
+  public async estimatePayment(yearsPurchased: number): Promise<PaymentEstimation> {
+    return await RNVerificationManager.estimatePayment({ ...this }, yearsPurchased);
+  }
+
+  public async getMintingPrice(): Promise<PriceEstimation> {
+    return await RNVerificationManager.getMintingPrice({ ...this });
+  }
+
+  public async requestMinting(selectedImageId: string, membershipDuration: number) {
+    await RNVerificationManager.requestMinting({ ...this }, selectedImageId, membershipDuration);
   }
 
   public async mint() : Promise<MintingResult> {
