@@ -6,8 +6,6 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.kycdao.android.sdk.model.functions.mint.MintingProperties
 import com.kycdao.android.sdk.util.Resource
 import com.kycdao.android.sdk.verificationSession.VerificationManager
-import com.kycdao.android.sdk.wallet.ChainID
-import com.kycdao.android.sdk.wallet.RPCURL
 import com.kycdao.android.sdk.wallet.WalletConnectManager
 import com.kycdao.android.sdk.wallet.WalletConnectSession
 import com.kycdaomobile.Wallet

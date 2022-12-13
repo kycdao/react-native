@@ -12,12 +12,12 @@ data class RNGasEstimation(
 	val feeInNative:String,
 )
 
-fun GasEstimation.toReactModel(precision: Int) : RNGasEstimation{
+fun GasEstimation.toReactModel() : RNGasEstimation{
 	return RNGasEstimation(
 		price = price,
 		amount = amount,
 		gasCurrency = gasCurrency.toReactModel(),
 		fee = fee,
-		feeInNative = feeInNative(precision)
+		feeInNative = feeText()
 	)
 }

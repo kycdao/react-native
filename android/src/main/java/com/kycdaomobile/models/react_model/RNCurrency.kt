@@ -7,7 +7,7 @@ data class RNCurrency(
 	val name: String,
 	val symbol: String,
 	val decimals: Int,
-	val baseToNativeDivisor: BigInteger,
+	val baseToNativeDivisor: String,
 )
 
 fun NativeCurrency.toReactModel(): RNCurrency {
@@ -15,6 +15,6 @@ fun NativeCurrency.toReactModel(): RNCurrency {
 		name = name,
 		symbol = symbol,
 		decimals = decimals,
-		baseToNativeDivisor = baseToNativeDivisor
+		baseToNativeDivisor = baseToNativeDivisor.toString()
 	)
 }

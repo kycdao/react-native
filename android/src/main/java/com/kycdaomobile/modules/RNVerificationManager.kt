@@ -5,6 +5,8 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.kycdao.android.sdk.model.GasEstimation
 import com.kycdao.android.sdk.model.PersonalData
+import com.kycdao.android.sdk.model.PriceEstimation
+import com.kycdao.android.sdk.model.VerificationType
 import com.kycdao.android.sdk.model.functions.mint.MintingTransactionResult
 import com.kycdao.android.sdk.verificationSession.VerificationManager
 import com.kycdao.android.sdk.verificationSession.VerificationSession
@@ -37,6 +39,11 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	}
 
 	private var sessions: HashMap<String, VerificationSession> = hashMapOf()
+
+	@ReactMethod
+		val config = configuration.toType(RNConfiguration::class.java)
+		VerificationManager.configure(config.asNativeModel())
+	}
 
 	@ReactMethod
 	fun createSession(walletAddress: String, walletSessionMap: ReadableMap, promise: Promise) {
@@ -79,13 +86,13 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
-	fun hasValidToken(hasTokenValidParams: ReadableMap,promise: Promise){
+	fun hasValidToken(verificationTypeText: String, walletAddress: String, chainID: String, promise: Promise){
 		promise.launch(this){
-			val params = hasTokenValidParams.toType(RNMethodHasTokenParams::class.java)
+			val verificationType = VerificationType.valueOf(verificationTypeText)
 			val result = VerificationManager.hasValidToken(
-				params.verificationType,
-				params.walletAddress,
-				params.networkOption.chainId
+				verificationType,
+				walletAddress,
+				chainID
 			)
 			promise.resolve(result)
 		}
@@ -95,7 +102,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun login(sessionDataMap: ReadableMap, promise: Promise) {
 		promise.launch(this) {
-			usingKycSessionFrom(sessionDataMap) {
+			usingVerificationSessionFrom(sessionDataMap) {
 				login()
 				promise.resolve(null)
 			}
@@ -145,7 +152,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun acceptDisclaimer(sessionDataMap: ReadableMap,promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				acceptDisclaimer()
 				promise.resolve(null)
 			}
@@ -155,7 +162,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun setPersonalData(sessionDataMap: ReadableMap, personalDataMap : ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				val personalData = personalDataMap.toType(PersonalData::class.java)
 				setPersonalData(personalData)
 				promise.resolve(null)
@@ -166,18 +173,28 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun freshSessionData(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				promise.resolve(this.toReactNativeModel().toWritableMap())
 			}
 		}
 	}
 
 	@ReactMethod
-	fun sendConfirmationEmail(sessionDataMap: ReadableMap, promise: Promise){
+	fun resendConfirmationEmail(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
-				sendConfirmationEmail()
+			usingVerificationSessionFrom(sessionDataMap){
+				resendConfirmationEmail()
 				promise.resolve(null)
+			}
+		}
+	}
+
+	@ReactMethod
+	fun getMembershipCostPerYear(sessionDataMap: ReadableMap, promise: Promise){
+		promise.launch(this){
+			usingVerificationSessionFrom(sessionDataMap){
+				val cost = getMembershipCostPerYear()
+				promise.resolve(cost)
 			}
 		}
 	}
@@ -185,7 +202,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun continueWhenEmailConfirmed(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				resumeOnEmailConfirmed()
 				promise.resolve(null)
 			}
@@ -195,7 +212,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun startIdentification(sessionDataMap: ReadableMap,promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				val identificationResult = startIdentification(currentActivity as ComponentActivity)
 				promise.resolve(identificationResult.name)
 			}
@@ -205,7 +222,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun resumeOnVerificationCompleted(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				this.resumeWhenIdentified()
 				promise.resolve(null)
 			}
@@ -215,17 +232,17 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun getNFTImages(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
+			usingVerificationSessionFrom(sessionDataMap){
 				promise.resolve(getNFTImages().toWritableArray())
 			}
 		}
 	}
 
 	@ReactMethod
-	fun requestMinting(sessionDataMap: ReadableMap,selectedImageId: String, promise: Promise){
+	fun requestMinting(sessionDataMap: ReadableMap,selectedImageId: String,membershipDuration: Double, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
-				requestMinting(selectedImageId)
+			usingVerificationSessionFrom(sessionDataMap){
+				requestMinting(selectedImageId, membershipDuration.toUInt())
 				promise.resolve(null)
 			}
 		}
@@ -234,26 +251,46 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	@ReactMethod
 	fun mint(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
-				val uri = mint()
-				promise.resolve(uri.toString())
+			usingVerificationSessionFrom(sessionDataMap){
+				val mintingResult = mint()
+				val rnMintingResult = mintingResult.toReactModel()
+				promise.resolve(rnMintingResult)
+			}
+		}
+	}
+	@ReactMethod
+	fun updateEmail(sessionDataMap: ReadableMap, email: String, promise: Promise){
+		promise.launch(this){
+			usingVerificationSessionFrom(sessionDataMap){
+				updateEmail(email)
 			}
 		}
 	}
 
 	@ReactMethod
-	fun estimateGasForMinting(sessionDataMap: ReadableMap,precision: Int = 3,promise: Promise){
+	fun estimatePayment(sessionDataMap: ReadableMap, yearsPurchased: Double,promise: Promise){
 		promise.launch(this){
-			usingKycSessionFrom(sessionDataMap){
-				val estimation: GasEstimation = estimateGasForMinting()
-				val rnEstimation = estimation.toReactModel(precision)
+			usingVerificationSessionFrom(sessionDataMap){
+				val paymentEstimation = estimatePayment(yearsPurchased.toUInt())
+				val rnPaymentEstimation = paymentEstimation.toReactModel()
+				promise.resolve(rnPaymentEstimation.toWritableMap())
+			}
+		}
+	}
+
+	@ReactMethod
+	fun getMintingPrice(sessionDataMap: ReadableMap,promise: Promise){
+		promise.launch(this){
+			usingVerificationSessionFrom(sessionDataMap){
+				val priceEstimation: PriceEstimation = getMintingPrice()
+				val rnEstimation = priceEstimation.toReactModel()
 				promise.resolve(rnEstimation.toWritableMap())
 			}
 		}
 	}
 
-	private suspend fun usingKycSessionFrom(sessionDataMap: ReadableMap, action :suspend VerificationSession.() ->Unit) {
-		val sessionData = sessionDataMap.toType(RNKycSession::class.java)
+	private suspend fun usingVerificationSessionFrom(sessionDataMap: ReadableMap, action :suspend VerificationSession.() ->Unit) {
+		val sessionData = sessionDataMap.toType(RNVerificationSession::class.java)
 		action(sessions[sessionData.id] ?: throw Exception("No kyc session found"))
 	}
 
