@@ -41,6 +41,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	private var sessions: HashMap<String, VerificationSession> = hashMapOf()
 
 	@ReactMethod
+	fun configure(configuration : ReadableMap){
 		val config = configuration.toType(RNConfiguration::class.java)
 		VerificationManager.configure(config.asNativeModel())
 	}
