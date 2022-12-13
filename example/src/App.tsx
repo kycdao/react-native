@@ -1,9 +1,7 @@
 import * as React from 'react';
 
-import { StyleSheet, Text, Button, SafeAreaView, TextInput, Alert } from 'react-native';
-import { 
-  multiply, 
-  printStuff, 
+import { StyleSheet, Text, Button, SafeAreaView, TextInput, Alert, EmitterSubscription } from 'react-native';
+import {
   WalletConnectManager, 
   WalletConnectSession, 
   VerificationManager, 
@@ -24,8 +22,8 @@ const configuration = new Configuration(
 );
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
   const walletSessionRef = React.useRef<BaseWalletSession>();
+  const sessionStartSubscription = React.useRef<EmitterSubscription>();
 
   React.useEffect(() => {
 
@@ -33,13 +31,12 @@ export default function App() {
       await VerificationManager.configure(configuration);
     }
 
-    multiply(3, 7).then(setResult);
     console.log("REACT DEBUG: HERE AGAIN");
     configure().catch(console.error);;
     
     var walletConnectManager = WalletConnectManager.getInstance();
 
-    this.sessionStartSubscription = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
+    sessionStartSubscription.current = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
       console.log("RECEIVED SESSION UPDATE");
 
       walletSessionRef.current = walletSession;
@@ -137,14 +134,16 @@ export default function App() {
 
     walletConnectManager.startListening();
     return function cleanup() {
-      this.sessionStartSubscription.remove();
+      if (sessionStartSubscription.current !== undefined) {
+        sessionStartSubscription.current.remove();
+      }
     };
   }, []);
   const [text, onChangeText] = React.useState("");
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Result</Text>
       <Button
         title="Start flow"
         color="#f194ff"
@@ -154,7 +153,6 @@ export default function App() {
             var wallets = await walletConnectManager.listWallets();
             console.log(wallets);
             console.debug(wallets.map(x => x.name));
-            printStuff(wallets.map(x => x.name).join(","));
             console.debug(wallets);
             console.debug(wallets.find(x => x.name === "MetaMask"));
             var metamask = wallets.find(x => x.name === "MetaMask");
@@ -179,14 +177,17 @@ export default function App() {
           console.log("Pressed:")
           console.log(walletSessionRef.current)
           if (walletSessionRef.current !== undefined) {
-            var res = await VerificationManager.getInstance()
-              .hasValidToken(
-                VerificationType.KYC,
-                walletSessionRef.current.accounts[0],
-                walletSessionRef.current
-              )
-            console.log(res)
-            Alert.alert("Has valid token?", res ? "yes" : "no")
+            var walletConnectSession = walletSessionRef.current as WalletConnectSession
+            if (walletConnectSession !== undefined) {
+              var res = await VerificationManager.getInstance()
+                .hasValidToken(
+                  VerificationType.KYC,
+                  walletConnectSession.accounts[0],
+                  walletConnectSession
+                )
+              console.log(res)
+              Alert.alert("Has valid token?", res ? "yes" : "no")
+            }
           }
         }}
       />
