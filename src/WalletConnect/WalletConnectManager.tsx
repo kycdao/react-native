@@ -75,6 +75,21 @@ export class WalletConnectManager {
         });
     }
 
+    /**
+     * Subscribe to WalletConnect URI change events. WalletConnect component is awaiting new connections on the last received URI.
+     * @param changedTo A handler where you get the current URI
+     * @returns A subscription that should be kept until it is being used. Call `remove()` on the subscription when it is no longer needed.
+     */
+    public subscribeOnURIChange(changedTo: (uri?: string) => void): EmitterSubscription {
+
+        return this.getEventEmitter().addListener(KycDaoReactEvents.WCSessionURIChanged, event => {
+            if (event === undefined || typeof event === "string") {
+                changedTo(event);
+            }
+        });
+
+    }
+
     private getEventEmitter(): NativeEventEmitter {
         return new NativeEventEmitter(RNWalletConnectManager);
     }

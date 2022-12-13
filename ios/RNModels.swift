@@ -12,7 +12,7 @@ import BigInt
 
 enum KycReactEvents: String, Codable {
     case wcSessionStarted = "WC_SESSION_STARTED"
-    case wcSessionFailed = "WC_SESSION_FAILED"
+    case wcSessionURIChanged = "WC_SESSION_URI_CHANGED"
     case methodPersonalSign = "METHOD_PERSONAL_SIGN"
     case methodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }

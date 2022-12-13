@@ -24,6 +24,7 @@ const configuration = new Configuration(
 export default function App() {
   const walletSessionRef = React.useRef<BaseWalletSession>();
   const sessionStartSubscription = React.useRef<EmitterSubscription>();
+  const uriChangeSubscription = React.useRef<EmitterSubscription>();
 
   React.useEffect(() => {
 
@@ -35,6 +36,10 @@ export default function App() {
     configure().catch(console.error);;
     
     var walletConnectManager = WalletConnectManager.getInstance();
+
+    uriChangeSubscription.current = walletConnectManager.subscribeOnURIChange((uri?: string) => {
+      console.log("NEW URI: " + uri);
+    });
 
     sessionStartSubscription.current = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
       console.log("RECEIVED SESSION UPDATE");
@@ -136,6 +141,9 @@ export default function App() {
     return function cleanup() {
       if (sessionStartSubscription.current !== undefined) {
         sessionStartSubscription.current.remove();
+      }
+      if (uriChangeSubscription.current !== undefined) {
+        uriChangeSubscription.current.remove();
       }
     };
   }, []);

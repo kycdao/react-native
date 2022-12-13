@@ -23,7 +23,7 @@ export interface SmartContractConfig {
 
 export enum KycDaoReactEvents {
     WCSessionStarted = "WC_SESSION_STARTED",
-    WCSessionFailed = "WC_SESSION_FAILED",
+    WCSessionURIChanged = "WC_SESSION_URI_CHANGED",
     MethodPersonalSign = "METHOD_PERSONAL_SIGN",
     MethodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
