@@ -23,7 +23,7 @@ Connecting to wallets starts with the `WalletConnectManager` having to actively 
 The `WalletConnectManager` has to be used through a singleton instance. You can obtain it using
 
 ```js
-var walletConnectManager = WalletConnectManager.getInstance()
+let walletConnectManager = WalletConnectManager.getInstance()
 ```
 
 To start listening for incoming connections, use
@@ -43,7 +43,7 @@ This subscription has to be stored and when you no longer need it, call `subscri
 !!!
 
 ```js
-var subscription = walletConnectManager.subscribeOnSession(
+let subscription = walletConnectManager.subscribeOnSession(
     async (walletSession: WalletConnectSession) => {
         // Successfull connection
     },

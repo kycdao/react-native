@@ -36,7 +36,7 @@ export default function App() {
     console.log("REACT DEBUG: HERE AGAIN");
     configure().catch(console.error);;
     
-    var walletConnectManager = WalletConnectManager.getInstance();
+    let walletConnectManager = WalletConnectManager.getInstance();
 
     uriChangeSubscription.current = walletConnectManager.subscribeOnURIChange((uri?: string) => {
       console.log("NEW URI: " + uri);
@@ -47,8 +47,8 @@ export default function App() {
 
       walletSessionRef.current = walletSession;
 
-      var verificationManager = VerificationManager.getInstance();
-      var verificationSession = await verificationManager.createSession(walletSession.accounts[0]!, walletSession);
+      let verificationManager = VerificationManager.getInstance();
+      let verificationSession = await verificationManager.createSession(walletSession.accounts[0]!, walletSession);
       console.log(verificationSession);
       console.log("VERIFICATIONSESSION CREATED");
 
@@ -68,7 +68,7 @@ export default function App() {
 
       if (verificationSession.requiredInformationProvided === false) {
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
-        var personalData = new PersonalData(
+        let personalData = new PersonalData(
           "robin@bitraptors.com", "HU"
         );
         await verificationSession.setPersonalData(personalData);
@@ -126,7 +126,7 @@ export default function App() {
       console.log("REACT PRICE:" + estimation.fullPriceText);
       console.log(estimation);
 
-      var mintingResult = await verificationSession.mint();
+      let mintingResult = await verificationSession.mint();
       console.log(mintingResult);
       console.log("URI:" + mintingResult.explorerURL);
       console.log("REACT DEBUG: Hurray");
@@ -157,13 +157,13 @@ export default function App() {
         color="#f194ff"
         onPress={async () => {
           try {
-            var walletConnectManager = WalletConnectManager.getInstance();
-            var wallets = await walletConnectManager.listWallets();
+            let walletConnectManager = WalletConnectManager.getInstance();
+            let wallets = await walletConnectManager.listWallets();
             console.log(wallets);
             console.debug(wallets.map(x => x.name));
             console.debug(wallets);
             console.debug(wallets.find(x => x.name === "MetaMask"));
-            var metamask = wallets.find(x => x.name === "MetaMask");
+            let metamask = wallets.find(x => x.name === "MetaMask");
             if (metamask !== undefined) {
               await walletConnectManager.connect(metamask);
             }
@@ -185,9 +185,9 @@ export default function App() {
           console.log("Pressed:")
           console.log(walletSessionRef.current)
           if (walletSessionRef.current !== undefined) {
-            var walletConnectSession = walletSessionRef.current as WalletConnectSession
+            let walletConnectSession = walletSessionRef.current as WalletConnectSession
             if (walletConnectSession !== undefined) {
-              var res = await VerificationManager.getInstance()
+              let res = await VerificationManager.getInstance()
                 .hasValidToken(
                   VerificationType.KYC,
                   walletConnectSession.accounts[0],
