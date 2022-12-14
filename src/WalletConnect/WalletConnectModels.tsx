@@ -1,4 +1,4 @@
-import type { WalletSessionInterface } from "../Core/Models";
+import type { MintingProperties } from "../Core/Models";
 
 /**
  * A model that describes a wallet for the SDK usable with WalletConnect.
@@ -23,6 +23,15 @@ export interface WCURL {
   bridgeURL: string;
   key: string;
   absoluteString: string;
+}
+
+
+export interface WalletSessionInterface {
+  id: string;
+  chainId: string;
+
+  personalSign(walletAddress: string, message: string): Promise<string>;
+  sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<MintingTransactionResult>;
 }
 
 export interface WalletConnectSessionInterface extends WalletSessionInterface {
@@ -63,4 +72,8 @@ export class WCSessionError extends Error {
     super(message)
     this.wallet = wallet
   }
+}
+
+export interface MintingTransactionResult {
+  txHash: string;
 }

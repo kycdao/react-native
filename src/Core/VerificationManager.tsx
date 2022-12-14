@@ -211,7 +211,7 @@ export class VerificationSession {
    * 
    * @param personalData Contains the personal data needed from the user
    */
-  public async setPersonalData(personalData : PersonalData) {
+  public async setPersonalData(personalData: PersonalData) {
     await RNVerificationManager.setPersonalData({ ...this }, personalData);
   }
 

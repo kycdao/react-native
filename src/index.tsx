@@ -1,7 +1,8 @@
 export { 
   WalletConnectManager, 
   WalletConnectSession,
-  WCSessionError 
+  WCSessionError,
+  MintingTransactionResult
 } from './WalletConnect/WalletConnectManager';
 export { 
   VerificationManager, 

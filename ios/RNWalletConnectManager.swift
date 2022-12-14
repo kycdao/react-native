@@ -147,9 +147,10 @@ class RNWalletConnectManager: RCTEventEmitter {
                 
                 guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData) else { throw KycDaoError.genericError }
                 
-                let txHash = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
-                print("BRIDGE: Minting hash \(txHash)")
-                resolve(txHash)
+                let txRes = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
+                print("BRIDGE: Minting hash \(txRes)")
+                let txResData = try txRes.encodeToDictionary()
+                resolve(txResData)
                 
             } catch let error {
                 reject("sendMintingTransaction", "Failed to mint NFT", error)

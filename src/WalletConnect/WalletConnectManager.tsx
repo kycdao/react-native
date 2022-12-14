@@ -1,10 +1,10 @@
 import { RNWalletConnectManager } from '../RNWalletConnectManager';
-import { EmitterSubscription, NativeEventEmitter } from 'react-native';
-import { Wallet, WCURL, WalletConnectSessionInterface, WCSessionError } from  "./WalletConnectModels";
+import { EmitterSubscription, NativeEventEmitter, Platform } from 'react-native';
+import { Wallet, WCURL, WalletConnectSessionInterface, WCSessionError, MintingTransactionResult } from  "./WalletConnectModels";
 import { KycDaoReactEvents, MintingProperties, RNError } from "../Core/Models";
 import { BaseWalletSession } from '../Core/BaseWalletSession';
 
-export { WCSessionError };
+export { WCSessionError, MintingTransactionResult };
 
 /**
  * A WalletConnect V1 compatibility support class. Use this, if you want to connect the verification flow to a wallet through WalletConnect
@@ -137,7 +137,10 @@ export class WalletConnectManager {
      * @param wallet The selected wallet you want to connect with
      * @returns 
      */
-    public connect(wallet: Wallet): Promise<void> {
+    public connect(wallet?: Wallet): Promise<void> {
+        if (wallet === undefined && Platform.OS === 'ios') {
+            throw new Error("You have to provide a wallet object for connecting on iOS");
+        }
         return RNWalletConnectManager.connect({ ...wallet });
     }
 
@@ -200,7 +203,7 @@ export class WalletConnectSession extends BaseWalletSession {
      * @param mintingProperties Data that describes a transaction used for minting
      * @returns The transaction hash
      */
-    sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string> {
+    sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<MintingTransactionResult> {
         console.log(mintingProperties);
         console.log("REACT: send Minting Tx: ");
         return RNWalletConnectManager.sendMintingTransaction({ ...this }, walletAddress, mintingProperties);

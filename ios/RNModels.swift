@@ -29,7 +29,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     internal var personalSignHandler: ((String, String) -> Void)?
     internal var sendMintingTransactionHandler: ((String, MintingProperties) -> Void)?
     var personalSignContinuation: CheckedContinuation<String, Error>?
-    var sendMintingTransactionContinuation: CheckedContinuation<String, Error>?
+    var sendMintingTransactionContinuation: CheckedContinuation<MintingTransactionResult, Error>?
     
     func personalSign(walletAddress: String, message: String) async throws -> String {
         guard let personalSignHandler = personalSignHandler else {
@@ -42,13 +42,13 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         }
     }
     
-    func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> String {
+    func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> MintingTransactionResult {
         guard let sendMintingTransactionHandler = sendMintingTransactionHandler else {
             throw KycDaoError.genericError
         }
 
         sendMintingTransactionHandler(walletAddress, mintingProperties)
-        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<String, Error>) in
+        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<MintingTransactionResult, Error>) in
             self?.sendMintingTransactionContinuation = continuation
         }
     }

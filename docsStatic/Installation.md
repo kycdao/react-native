@@ -33,7 +33,8 @@ import {
   WCSessionError,
   Configuration,
   KycDaoEnvironment,
-  BaseWalletSession
+  BaseWalletSession,
+  MintingTransactionResult
 } from 'kycdao-mobile';
 ```
 

@@ -55,35 +55,46 @@ var subscription = walletConnectManager.subscribeOnSession(
 The user's wallet can be connected via the following two options:
 
 - Present them a QR code which they can scan to connect
-- Rely on the built in intent mechanism to oppen an installed wallet.
+- Open a wallet
+    - Android: Rely on the built in intent mechanism to oppen them
+    - iOS: Show them a list of supported wallet apps, where they can manually select their own
 
 ### Connecting through QR Code
 
-The QR Code for WalletConnect is an URI. This URI will change with every attempt at connecting to a wallet, regerdless if it was a succes or not. This is needed to ensure that the system is always ready for new connections.
-These updates are served on a `pendingSessionURI` flow. Here's an example how to handle the incoming URI changes:
+The QR Code for WalletConnect is an URI. This URI will change with every attempt at connecting to a wallet, regerdless if it was a successful or not. This is needed to ensure that the system is always ready for new connections.
+You can subscribe to these URI change events. Here's an example how to handle the incoming URI changes:
 
-```kotlin
-WalletConnectManager.pendingSessionURI.collect { qrUri-> //String
-    //Encode URI as a QR code
-    //Set imageView content to the QR code
-}
+```js
+walletConnectManager.subscribeOnURIChange((uri?: string) => {
+    console.log("NEW URI: " + uri);
+    // Encode URI as a QR code
+    // Set imageView content to the QR code
+});
 ```
 
-Once the user scans the QR code and accepts the prompt shown by the wallet, the `sessionState` will emit the successfully established `WalletConnectSession`, and `pendingSessionURI` will emit the URI for the next possible connection.
+Once the user scans the QR code and accepts the prompt shown by the wallet, the `subscribeOnSession` will emit the successfully established `WalletConnectSession`s, and `subscribeOnURIChange` will emit the URI for the next possible connection.
 
-### Connecting through the provided intent
+### Connecting by opening the wallet app
 
-If the wallet that the user wishes to connect to is installed on the same device as the SDK is running on, all thats needed to be done is:
+On iOS, the user has to select a wallet app they wish to connect to from a list that is based on [WalletConnect V1 registry](https://registry.walletconnect.com/api/v1/wallets).
 
-```kotlin
-WalletConnectManager.connectWallet()
+On Android if the wallet that the user wishes to connect to is installed on the same device as the SDK is running on, the target wallet will appear on a system sheet where you can select it.
+
+```js
+if (Platform.OS === 'ios') {
+    let wallets = await walletConnectManager.listWallets();
+    let selectedWallet = wallets[0]; // User selects wallet
+    await walletConnectManager.connect(selectedWallet);
+} else {
+    await walletConnectManager.connect();
+}
 ```
 
 !!!warning
 Before doing this make sure that the `WalletConnectManager` is listening for connection.
 !!!
 
-Once the wallet is launched and the user accepts the connection, `sessionState` will emit the established `WalletConnectSession`, and `pendingSessionURI` will emit the URI for the next possible connection.
+Once the wallet is launched and the user accepts the connection, `subscribeOnSession` will emit the established `WalletConnectSession`, and `subscribeOnURIChange` will emit the URI for the next possible connection.
 
 ## Check verification status of an address
 
@@ -97,13 +108,14 @@ In case the user’s wallet address is unknown, you can get a connection through
 
 When you already have the chain information of the user's wallet, you can use a chain id in [CAIP-2 format](https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-2.md) format to check for a valid token.
 
-```kotlin
-val chainId = "eip155:80001"
-val hasValidToken = VerificationManager.hasValidToken(
-    verificationType = VerificationType.KYC,
-    walletAddress = walletAddress,
-    chainId = chainId
-)
+```js
+const chainId = "eip155:80001"
+let hasValidToken = await VerificationManager.getInstance()
+    .hasValidToken(
+        VerificationType.KYC,
+        walletAddress,
+        chainId
+    )
 ```
 
 ### Using WalletConnectSession
@@ -112,23 +124,22 @@ val hasValidToken = VerificationManager.hasValidToken(
 
 Once we obtained the wallet address, we can call
 
-```kotlin
-val hasValidToken = VerificationManager.hasValidToken(
-    verificationType = VerificationType.KYC,
-    walletAddress = walletAddress,
-    walletSession = walletConnectSession
-)
+```js
+let hasValidToken = await VerificationManager.getInstance()
+    .hasValidToken(
+        VerificationType.KYC,
+        walletAddress,
+        walletSession
+    )
 ```
 
 ## Starting the verification flow
 
 The requirements before starting the verification process are that you need to have a `WalletConnectSession` and a selected wallet address from the available accounts.
 
-```kotlin
-val verificationSession = VerificationManager.createSession(
-    walletAddress = selectedAddress,
-    walletSession = walletConnectSession
-)
+```js
+let verificationSession = await VerificationManager.getInstance()
+    .createSession(walletAddress!, walletSession);
 ```
 
 ## Implementing the onboarding process
@@ -137,6 +148,6 @@ val verificationSession = VerificationManager.createSession(
 
 ## Summary
 
-```kotlin
+```js
 Summary code
 ```

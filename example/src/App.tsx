@@ -13,7 +13,8 @@ import {
   WCSessionError,
   Configuration,
   KycDaoEnvironment,
-  BaseWalletSession
+  BaseWalletSession,
+  MintingTransactionResult
 } from 'kycdao-mobile';
 
 const configuration = new Configuration(
@@ -94,7 +95,6 @@ export default function App() {
         console.log("REACT DEBUG:" + IdentityFlowResult.Completed);
         console.log("REACT DEBUG:" + identificationStatus == IdentityFlowResult.Completed);
 
-
         if (identificationStatus === IdentityFlowResult.Completed) {
           await verificationSession.resumeOnVerificationCompleted();
           console.log("REACT DEBUG: CONTINUE WHEN IDENTIFIED");
@@ -122,7 +122,7 @@ export default function App() {
       console.log("REACT DEBUG: GOT IMAGES " + images);
       await verificationSession.requestMinting(images[0].id, 3);
       console.log("REACT DEBUG: GOT MINTING AUTH");
-      var estimation = await verificationSession.getMintingPrice();
+      let estimation = await verificationSession.getMintingPrice();
       console.log("REACT PRICE:" + estimation.fullPriceText);
       console.log(estimation);
 

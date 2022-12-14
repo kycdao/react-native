@@ -183,7 +183,7 @@ class RNVerificationManager: RCTEventEmitter {
                 throw KycDaoError.genericError
             }
             
-            walletSession.sendMintingTransactionContinuation?.resume(returning: txHash)
+            walletSession.sendMintingTransactionContinuation?.resume(returning: MintingTransactionResult(txHash: txHash))
             
         } catch {
             

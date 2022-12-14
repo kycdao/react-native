@@ -1,13 +1,13 @@
 
 import { EventSubscription, NativeEventEmitter } from "react-native";
 import {
-    WalletSessionInterface,
     KycDaoReactEvents,
     MethodMintingTransactionParams,
     MethodPersonalSignParams,
     MintingProperties,
 } from "./Models";
 import { RNVerificationManager } from "./../RNVerificationManager";
+import type { MintingTransactionResult, WalletSessionInterface } from "src/WalletConnect/WalletConnectModels";
 
 /**
  * An abstract class that describes a communication session with a wallet that can be used during the verification process.
@@ -85,7 +85,7 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
      * @param mintingProperties Data that describes a transaction used for minting
      * @returns The transaction hash
      */
-    abstract sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
+    abstract sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<MintingTransactionResult>;
 
     /**
      * WalletSession objects must be cleaned up when they are no longer needed. 

@@ -117,15 +117,6 @@ export class NetworkConfig {
     }
 }
 
-
-export interface WalletSessionInterface {
-    id: string;
-    chainId: string;
-
-    personalSign(walletAddress: string, message: string): Promise<string>;
-    sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<string>;
-}
-
 // export interface MethodHasValidTokenParams {
 //     verificationType: VerificationType,
 //     walletAddress: string,

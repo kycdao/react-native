@@ -14,48 +14,62 @@ The following topics will be discussed here:
 
 ## Handle wallet related tasks
 
-The SDK requires that it has access to wallet related data and functions. The `WalletSession` interface describes a communication session with your wallet, where these function and data requirements are defined. You have to create a conforming class to this interface and provide an implementation of the signing and minting functions.
+The SDK requires that it has access to wallet related data and functions. The `BaseWalletSession` abstract class describes a communication session with your wallet, where these function and data requirements are defined. You have to inherit from this abstract class and provide an implementation of the signing and minting functions.
 
-### Conforming to WalletSession interface
+### Inheriting from BaseWalletSession
 
 Properties   | Implementation
 :--:    | ---
-`id` | A unique identifier for your session, assigning `UUID.randomUUID().toString()` to this property at the initialization of your implementation should be enough.
+`id` | A unique identifier for your session. Assigning a random UUID at the initialization of your class should be enough.
 `chainId` | The ID of the chain used specified in [CAIP-2 format](https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-2.md). For example eip155:1 is the chainId of Ethereum Mainnet.
 
 ### Functions
 
-`personalSign(walletAddress: String, message: String): String`
+`abstract personalSign(walletAddress: string, message: string): Promise<string>`
 
 In the implementation of this function your wallet is expected to sign a message (for EVM chains use the personal_sign call), with the given wallet address. The return value of this function should be the signed message.
 
-`sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties): MintingTransactionResult`
+`abstract sendMintingTransaction(walletAddress: string, mintingProperties: MintingProperties): Promise<MintingTransactionResult>`
 
 In the implementation of this function your wallet is expected to send a transaction (for EVM chains use eth_sendTransaction call), with the given wallet address using the minting properties. Returns the transaction hash wrapped in a `MintingTransactionResult` class.
 
 ## Checking the verification status of an address
 
+### Using your WalletSession implementation
+
+You have to pass your `BaseWalletSession` object to `VerificationManager.hasValidToken(verificationType:walletAddress:walletSession:)` along with a wallet address and verification type.
+
+```js
+let hasValidToken = await VerificationManager.getInstance()
+    .hasValidToken(
+        VerificationType.KYC,
+        walletAddress,
+        walletSession
+    )
+```
+
+### Using existing wallet information
+
 When you already have the chain information of the user's wallet, you can use a chain id in [CAIP-2 format](https://github.com/ChainAgnostic/CAIPs/blob/master/CAIPs/caip-2.md) format to check for a valid token.
 
-```kotlin
-val chainId = "eip155:80001"
-val hasValidToken = VerificationManager.hasValidToken(
-    verificationType = VerificationType.KYC,
-    walletAddress = walletAddress,
-    chainId = chainId
-)
+```js
+const chainId = "eip155:80001"
+let hasValidToken = await VerificationManager.getInstance()
+    .hasValidToken(
+        VerificationType.KYC,
+        walletAddress,
+        chainId
+    )
 ```
 
 ## Starting the onboarding flow
 
-First you need to have an instance of an object you created at the ‘Conforming to WalletSession interface’ section. Once you obtained your wallet session instance, pass it along with a wallet address to `createSession(walletAddress: String, walletSession: WalletSession)`
+First you need to have an instance of an object you created at the ‘Inheriting from BaseWalletSession’ section. Once you obtained your wallet session instance, pass it along with a wallet address to `createSession(walletAddress: string, walletSession: BaseWalletSession)`
 
-```kotlin
-val walletSessionImpl : WalletSession = ... // Create an instance of your WalletSession implementation
-val verificationSession = VerificationManager.createSession(
-    walletAddress = selectedAddress,
-    walletSession = walletSessionImpl
-)
+```js
+let walletSession : BaseWalletSession = ... // Create an instance of your BaseWalletSession’ implementation
+let verificationSession = await VerificationManager.getInstance()
+    .createSession(walletAddress!, walletSession);
 ```
 
 ## Implementing the onboarding process
