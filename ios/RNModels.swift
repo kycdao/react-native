@@ -33,7 +33,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     
     func personalSign(walletAddress: String, message: String) async throws -> String {
         guard let personalSignHandler = personalSignHandler else {
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
 
         personalSignHandler(walletAddress, message)
@@ -44,7 +44,7 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     
     func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> MintingTransactionResult {
         guard let sendMintingTransactionHandler = sendMintingTransactionHandler else {
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
 
         sendMintingTransactionHandler(walletAddress, mintingProperties)
@@ -119,6 +119,7 @@ struct RNVerificationSession: Codable {
     var disclaimerText: String
     var termsOfServiceURL: String
     var privacyPolicyURL: String
+    var emailAddress: String?
 }
 
 struct RNSmartContractConfig: Codable {

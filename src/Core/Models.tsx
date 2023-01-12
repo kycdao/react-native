@@ -12,6 +12,7 @@ export interface VerificationSessionInterface {
     disclaimerText: string;
     termsOfServiceURL: string;
     privacyPolicyURL: string;
+    emailAddress: string;
 }
   
 export interface SmartContractConfig {

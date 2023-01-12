@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { StyleSheet, Text, Button, SafeAreaView, TextInput, Alert, EmitterSubscription } from 'react-native';
+import { StyleSheet, Text, Button, SafeAreaView, TextInput, Alert, EmitterSubscription, Platform } from 'react-native';
 import {
   WalletConnectManager, 
   WalletConnectSession, 
@@ -26,27 +26,13 @@ export default function App() {
   const sessionStartSubscription = React.useRef<EmitterSubscription>();
   const uriChangeSubscription = React.useRef<EmitterSubscription>();
 
-  React.useEffect(() => {
-
-    const configure = async () => {
-      await VerificationManager.configure(configuration);
-    }
-
-    console.log("REACT DEBUG: HERE AGAIN");
-    configure().catch(console.error);;
+  const verifyWallet = async () => {
     
-    let walletConnectManager = WalletConnectManager.getInstance();
+    if (walletSessionRef.current !== undefined) {
+      let walletSession = walletSessionRef.current as WalletConnectSession
+      if (walletSession !== undefined) {
 
-    uriChangeSubscription.current = walletConnectManager.subscribeOnURIChange((uri?: string) => {
-      console.log("NEW URI: " + uri);
-    });
-
-    sessionStartSubscription.current = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
-      console.log("RECEIVED SESSION UPDATE");
-
-      walletSessionRef.current = walletSession;
-
-      let verificationManager = VerificationManager.getInstance();
+        let verificationManager = VerificationManager.getInstance();
       let verificationSession = await verificationManager.createSession(walletSession.accounts[0]!, walletSession);
       console.log(verificationSession);
       console.log("VERIFICATIONSESSION CREATED");
@@ -108,7 +94,7 @@ export default function App() {
 
       if (verificationSession.hasMembership === false) {
         console.log("REACT DEBUG: DOES NOT HAVE MEMBERSHIP");
-        let membershipCostPerYear = await verificationSession.getMembershipCostPerYear();
+        let membershipCostPerYear = await verificationSession.getMembershipCostPerYearText();
         console.log(membershipCostPerYear);
         console.log("MEMBERSHIP COST PER YEAR: " + membershipCostPerYear);
         let paymentEstimation = await verificationSession.estimatePayment(3);
@@ -130,6 +116,29 @@ export default function App() {
       console.log("URI:" + mintingResult.explorerURL);
       console.log("REACT DEBUG: Hurray");
 
+      }
+    }
+  };
+
+  React.useEffect(() => {
+
+    const configure = async () => {
+      await VerificationManager.configure(configuration);
+    }
+
+    console.log("REACT DEBUG: HERE AGAIN");
+    configure().catch(console.error);;
+    
+    let walletConnectManager = WalletConnectManager.getInstance();
+
+    uriChangeSubscription.current = walletConnectManager.subscribeOnURIChange((uri?: string) => {
+      console.log("NEW URI: " + uri);
+    });
+
+    sessionStartSubscription.current = walletConnectManager.subscribeOnSession(async (walletSession: WalletConnectSession) => {
+      console.log("RECEIVED SESSION UPDATE");
+
+      walletSessionRef.current = walletSession;
     },
     //Session start failure
     async (error: WCSessionError) => {
@@ -146,39 +155,37 @@ export default function App() {
       }
     };
   }, []);
-  const [text, onChangeText] = React.useState("");
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text>Result</Text>
       <Button
-        title="Start flow"
+        title="Connect wallet"
         color="#f194ff"
         onPress={async () => {
           try {
             let walletConnectManager = WalletConnectManager.getInstance();
-            let wallets = await walletConnectManager.listWallets();
-            console.log(wallets);
-            console.debug(wallets.map(x => x.name));
-            console.debug(wallets);
-            console.debug(wallets.find(x => x.name === "MetaMask"));
-            let metamask = wallets.find(x => x.name === "MetaMask");
-            if (metamask !== undefined) {
-              await walletConnectManager.connect(metamask);
+            if (Platform.OS === 'ios') {
+              let wallets = await walletConnectManager.listWallets();
+              console.debug(wallets.find(x => x.name === "MetaMask"));
+              let metamask = wallets.find(x => x.name === "MetaMask");
+              if (metamask !== undefined) {
+                await walletConnectManager.connect(metamask);
+              }
+            } else {
+              await walletConnectManager.connect();
             }
           } catch (error) {
             console.error(error);
           }
         }}
       />
-      <TextInput
-        style={styles.input}
-        placeholder='wallet address'
-        value={text}
-        onChangeText={onChangeText}
+      <Button
+        title="Verify wallet"
+        color="#f194ff"
+        onPress={ verifyWallet }
       />
       <Button
-        title='Check if address has token'
+        title='Check if wallet has token'
         color="#0907ab"
         onPress={async () => {
           console.log("Pressed:")
@@ -194,6 +201,26 @@ export default function App() {
                 )
               console.log(res)
               Alert.alert("Has valid token?", res ? "yes" : "no")
+            }
+          }
+        }}
+      />
+      <Button
+        title='Check verified networks'
+        color="#0907ab"
+        onPress={async () => {
+          console.log("Pressed:")
+          console.log(walletSessionRef.current)
+          if (walletSessionRef.current !== undefined) {
+            let walletConnectSession = walletSessionRef.current as WalletConnectSession
+            if (walletConnectSession !== undefined) {
+              let res = await VerificationManager.getInstance()
+                .checkVerifiedNetworks(
+                  VerificationType.KYC,
+                  walletConnectSession.accounts[0]
+                );
+              console.log(res);
+              Alert.alert(JSON.stringify(res));
             }
           }
         }}

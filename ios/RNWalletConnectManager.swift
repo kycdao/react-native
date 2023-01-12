@@ -10,13 +10,7 @@ import React
 import KycDao
 import Combine
 
-extension WalletConnectSession: Hashable {
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-}
+// MARK: -WalletConnectManager
 
 @objc(RNWalletConnectManager)
 class RNWalletConnectManager: RCTEventEmitter {
@@ -120,6 +114,16 @@ class RNWalletConnectManager: RCTEventEmitter {
         
     }
     
+    @objc override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
+}
+
+// MARK: -WallerConnectSession
+
+extension RNWalletConnectManager {
+    
     @objc(sign:account:message:resolve:reject:)
     func sign(_ sessionData: [String: Any], account: String, message: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task {
@@ -145,10 +149,10 @@ class RNWalletConnectManager: RCTEventEmitter {
                 
                 let session = try await fetchSessionFromData(sessionData)
                 
-                guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData) else { throw KycDaoError.genericError }
+                guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData)
+                else { throw KycDaoError.internal(.unknown) }
                 
                 let txRes = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
-                print("BRIDGE: Minting hash \(txRes)")
                 let txResData = try txRes.encodeToDictionary()
                 resolve(txResData)
                 
@@ -158,19 +162,22 @@ class RNWalletConnectManager: RCTEventEmitter {
         }
     }
     
-    @objc override static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-    
     private func fetchSessionFromData(_ sessionData: [String: Any]) async throws -> WalletConnectSession {
         
         let rnSession = try RNWalletSession.decode(from: sessionData)
-        guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString }) else {
-            throw KycDaoError.genericError
-        }
+        guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString })
+        else { throw KycDaoError.internal(.unknown) }
         
         return session
         
+    }
+    
+}
+
+extension WalletConnectSession: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
     
 }

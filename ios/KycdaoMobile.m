@@ -3,19 +3,6 @@
 
 @interface RCT_EXTERN_MODULE(KycdaoMobile, NSObject)
 
-RCT_EXTERN_METHOD(multiply:(float)a withB:(float)b
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(printStuff:(NSString)stuff)
-
-RCT_EXTERN_METHOD(launchKycFlow)
-
-+ (BOOL)requiresMainQueueSetup
-{
-  return NO;
-}
-
 @end
 
 
@@ -43,6 +30,11 @@ RCT_EXTERN_METHOD(createSession:(NSString)walletAddress
 RCT_EXTERN_METHOD(hasValidToken:(NSString)verificationTypeData
                   walletAddress:(NSString)walletAddress
                   chainId:(NSString)chainId
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(checkVerifiedNetworks:(NSString)verificationTypeData
+                  walletAddress:(NSString)walletAddress
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
@@ -84,7 +76,11 @@ RCT_EXTERN_METHOD(getNFTImages:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(getMembershipCostPerYear:(NSDictionary)sessionData
+RCT_EXTERN_METHOD(regenerateNFTImages:(NSDictionary)sessionData
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getMembershipCostPerYearText:(NSDictionary)sessionData
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
@@ -118,7 +114,7 @@ RCT_EXTERN_METHOD(personalSignFailure:(NSDictionary)walletSessionData
                   reason:(NSString)reason)
 
 RCT_EXTERN_METHOD(mintingTransactionSuccess:(NSDictionary)walletSessionData
-                  txHash:(NSString)txHash)
+                  mintingTransactionResultData:(NSDictionary)mintingTransactionResultData)
 
 RCT_EXTERN_METHOD(mintingTransactionFailure:(NSDictionary)walletSessionData
                   reason:(NSString)reason)

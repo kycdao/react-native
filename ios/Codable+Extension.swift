@@ -15,9 +15,7 @@ extension Encodable {
         
         guard let dictionary = try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed) as? [String: Any]
         else {
-            print(self)
-            print(try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed))
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
         
         return dictionary
@@ -28,9 +26,7 @@ extension Encodable {
         
         guard let dictionary = try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed) as? [Any]
         else {
-            print(self)
-            print(try JSONSerialization.jsonObject(with: encodedObject, options: .fragmentsAllowed))
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
         
         return dictionary

@@ -55,15 +55,9 @@ export abstract class BaseWalletSession implements WalletSessionInterface {
             var mintingTransactionParams = event as MethodMintingTransactionParams;
             if (mintingTransactionParams !== undefined && mintingTransactionParams.id == this.id) {
                 try {
-                    console.log(mintingTransactionParams);
-                    console.log(mintingTransactionParams.mintingProperties);
-                    var txHash = await this.sendMintingTransaction(mintingTransactionParams.walletAddress, mintingTransactionParams.mintingProperties);
-                    console.log("TxHash");
-                    console.log(txHash);
-                    console.error("Success");
-                    RNVerificationManager.mintingTransactionSuccess({ ...this }, txHash);
+                    var txResult = await this.sendMintingTransaction(mintingTransactionParams.walletAddress, mintingTransactionParams.mintingProperties);
+                    RNVerificationManager.mintingTransactionSuccess({ ...this }, txResult);
                 } catch (error) {
-                    console.log("Ran into error");
                     console.error(error);
                     RNVerificationManager.mintingTransactionFailure({ ...this }, error);
                 }

@@ -77,6 +77,7 @@ export class VerificationManager {
                             sessionData.termsOfServiceURL,
                             sessionData.privacyPolicyURL,
                             walletSession,
+                            sessionData.emailAddress
                             );
     }
     console.log("Native model of KYCSession does not match the TypeScript model");
@@ -108,6 +109,17 @@ export class VerificationManager {
       return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId);
     }
     return await RNVerificationManager.hasValidToken(verificationType, walletAddress, walletSessionOrChainId.chainId);
+  }
+
+  /**
+   * Checks on-chain whether the wallet has a valid token for the verification type
+   * 
+   * @param verificationType The type of verification we want to find a valid token for
+   * @param walletAddress The address of the wallet the token belongs to
+   * @return True, when the wallet has a valid token for the selected verification type on the wallet session’s network
+   */
+  public async checkVerifiedNetworks(verificationType: VerificationType, walletAddress: string) : Promise<{[key: string]: boolean}> {
+    return await RNVerificationManager.checkVerifiedNetworks(verificationType, walletAddress);
   }
 
 }
@@ -146,6 +158,8 @@ export class VerificationSession {
   privacyPolicyURL: string;
   /** A wallet session associated with this `VerificationSession` */
   walletSession: BaseWalletSession;
+  /** Email address of the user */
+  emailAddress?: string;
 
   /** @internal */
   constructor(
@@ -162,6 +176,7 @@ export class VerificationSession {
     termsOfServiceURL: string,
     privacyPolicyURL: string,
     walletSession: BaseWalletSession,
+    emailAddress?: string
   ) {
     this.id = id;
     this.walletAddress = walletAddress;
@@ -176,6 +191,7 @@ export class VerificationSession {
     this.termsOfServiceURL = termsOfServiceURL;
     this.privacyPolicyURL = privacyPolicyURL;
     this.walletSession = walletSession;
+    this.emailAddress = emailAddress;
   }
 
   /**
@@ -197,6 +213,7 @@ export class VerificationSession {
    */
   public async acceptDisclaimer() {
     await RNVerificationManager.acceptDisclaimer({ ...this });
+    await this.syncSessionData();
   }
 
   /**
@@ -213,6 +230,7 @@ export class VerificationSession {
    */
   public async setPersonalData(personalData: PersonalData) {
     await RNVerificationManager.setPersonalData({ ...this }, personalData);
+    await this.syncSessionData();
   }
 
   /**
@@ -226,6 +244,7 @@ export class VerificationSession {
    */
   public async updateEmail(newEmail: string) {
     await RNVerificationManager.updateEmail({ ...this }, newEmail);
+    await this.syncSessionData();
   }
 
   /**
@@ -244,6 +263,7 @@ export class VerificationSession {
   /** Suspends the current async task and continues execution when email address becomes confirmed. */
   public async resumeOnEmailConfirmed() {
     await RNVerificationManager.resumeOnEmailConfirmed({ ...this });
+    await this.syncSessionData();
   }
 
   /**
@@ -267,10 +287,11 @@ export class VerificationSession {
    */
   public async resumeOnVerificationCompleted() {
     await RNVerificationManager.resumeOnVerificationCompleted({ ...this });
+    await this.syncSessionData();
   }
 
   /**
-   * Provides the selectable kycNFT images
+   * Provides the available kycNFT images the user can choose from
    * @returns A list of image related data
    */
   public async getNFTImages(): Promise<[TokenImage]> {
@@ -278,11 +299,21 @@ export class VerificationSession {
   }
 
   /**
+   * Regenerates and returns the available kycNFT images the user can choose from
+   * @returns A list of image related data
+   */
+  public async regenerateNFTImages(): Promise<[TokenImage]> {
+    let images = await RNVerificationManager.regenerateNFTImages({ ...this });
+    await this.syncSessionData();
+    return images;
+  }
+
+  /**
    * Use it for displaying annual membership cost to the user
    * @returns The cost of membership per year in USD
    */
-  public async getMembershipCostPerYear(): Promise<number> {
-    return await RNVerificationManager.getMembershipCostPerYear({ ...this });
+  public async getMembershipCostPerYearText(): Promise<string> {
+    return await RNVerificationManager.getMembershipCostPerYearText({ ...this });
   }
 
   /**
@@ -314,6 +345,7 @@ export class VerificationSession {
    */
   public async requestMinting(selectedImageId: string, membershipDuration: number) {
     await RNVerificationManager.requestMinting({ ...this }, selectedImageId, membershipDuration);
+    await this.syncSessionData();
   }
 
   /**
@@ -325,17 +357,16 @@ export class VerificationSession {
    * @returns Successful minting related data
    */
   public async mint() : Promise<MintingResult> {
-    return await RNVerificationManager.mint({ ...this });
+    let result = await RNVerificationManager.mint({ ...this });
+    await this.syncSessionData();
+    return result;
   }
 
   private async syncSessionData() {
 
     try {
       
-      var sessionDataUpdate = await RNVerificationManager.freshSessionData({ ...this}) as VerificationSessionInterface;
-
-      console.log("Fresh session data");
-      console.log(sessionDataUpdate);
+      var sessionDataUpdate = await RNVerificationManager.freshSessionData({ ...this }) as VerificationSessionInterface;
 
       if (sessionDataUpdate !== undefined) {
         this.id = sessionDataUpdate.id;
@@ -346,6 +377,7 @@ export class VerificationSession {
         this.disclaimerAccepted = sessionDataUpdate.disclaimerAccepted;
         this.requiredInformationProvided = sessionDataUpdate.requiredInformationProvided;
         this.verificationStatus = sessionDataUpdate.verificationStatus;
+        this.emailAddress = sessionDataUpdate.emailAddress;
       } else {
         throw TypeError("Session data update structure did not meet expected TypeScript model");
       }
