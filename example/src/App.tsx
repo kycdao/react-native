@@ -13,8 +13,7 @@ import {
   WCSessionError,
   Configuration,
   KycDaoEnvironment,
-  BaseWalletSession,
-  MintingTransactionResult
+  BaseWalletSession
 } from 'kycdao-mobile';
 
 const configuration = new Configuration(
