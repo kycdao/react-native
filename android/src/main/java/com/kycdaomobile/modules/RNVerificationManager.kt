@@ -99,6 +99,18 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 		}
 	}
 
+	@ReactMethod
+	fun checkVerifiedNetworks(verificationTypeText: String, walletAddress: String, promise: Promise){
+		promise.launch(this){
+			val verificationType = VerificationType.valueOf(verificationTypeText)
+			val result = VerificationManager.checkVerifiedNetworks(
+				verificationType,
+				walletAddress,
+			)
+			promise.resolve(result.toWritableMap())
+		}
+	}
+
 
 	@ReactMethod
 	fun login(sessionDataMap: ReadableMap, promise: Promise) {
@@ -191,21 +203,30 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	}
 
 	@ReactMethod
-	fun getMembershipCostPerYear(sessionDataMap: ReadableMap, promise: Promise){
+	fun getMembershipCostPerYearText(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
 			usingVerificationSessionFrom(sessionDataMap){
-				val cost = getMembershipCostPerYear()
+				val cost = getMembershipCostPerYearText()
 				promise.resolve(cost)
 			}
 		}
 	}
 
 	@ReactMethod
-	fun continueWhenEmailConfirmed(sessionDataMap: ReadableMap, promise: Promise){
+	fun resumeOnEmailConfirmed(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
 			usingVerificationSessionFrom(sessionDataMap){
 				resumeOnEmailConfirmed()
 				promise.resolve(null)
+			}
+		}
+	}
+
+	@ReactMethod
+	fun regenerateNFTImages(sessionDataMap: ReadableMap,promise: Promise){
+		promise.launch(this){
+			usingVerificationSessionFrom(sessionDataMap){
+				promise.resolve(regenerateNFTImages().toWritableArray())
 			}
 		}
 	}
@@ -224,7 +245,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	fun resumeOnVerificationCompleted(sessionDataMap: ReadableMap, promise: Promise){
 		promise.launch(this){
 			usingVerificationSessionFrom(sessionDataMap){
-				this.resumeWhenIdentified()
+				this.resumeOnVerificationCompleted()
 				promise.resolve(null)
 			}
 		}
@@ -243,7 +264,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	fun requestMinting(sessionDataMap: ReadableMap,selectedImageId: String,membershipDuration: Double, promise: Promise){
 		promise.launch(this){
 			usingVerificationSessionFrom(sessionDataMap){
-				requestMinting(selectedImageId, membershipDuration.toUInt())
+				requestMinting(selectedImageId, membershipDuration.toInt())
 				promise.resolve(null)
 			}
 		}
@@ -255,7 +276,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 			usingVerificationSessionFrom(sessionDataMap){
 				val mintingResult = mint()
 				val rnMintingResult = mintingResult.toReactModel()
-				promise.resolve(rnMintingResult)
+				promise.resolve(rnMintingResult.toWritableMap())
 			}
 		}
 	}
@@ -272,7 +293,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 	fun estimatePayment(sessionDataMap: ReadableMap, yearsPurchased: Double,promise: Promise){
 		promise.launch(this){
 			usingVerificationSessionFrom(sessionDataMap){
-				val paymentEstimation = estimatePayment(yearsPurchased.toUInt())
+				val paymentEstimation = estimatePayment(yearsPurchased.toInt())
 				val rnPaymentEstimation = paymentEstimation.toReactModel()
 				promise.resolve(rnPaymentEstimation.toWritableMap())
 			}
@@ -292,7 +313,7 @@ class RNVerificationManager(private val reactContext: ReactApplicationContext) :
 
 	private suspend fun usingVerificationSessionFrom(sessionDataMap: ReadableMap, action :suspend VerificationSession.() ->Unit) {
 		val sessionData = sessionDataMap.toType(RNVerificationSession::class.java)
-		action(sessions[sessionData.id] ?: throw Exception("No kyc session found"))
+		action(sessions[sessionData.id] ?: throw Exception("No verification session found"))
 	}
 
 

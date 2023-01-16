@@ -65,24 +65,6 @@ class RNWalletConnectManager(reactContext: ReactApplicationContext) :
 			}
 		}
 	}
-
-	@ReactMethod
-	fun hasValidTokenWalletSession(hasTokenValidParams: ReadableMap,promise: Promise){
-		promise.launch(this){
-			val params = hasTokenValidParams.toType(RNMethodHasTokenWalletSessionParams::class.java)
-			val walletSession = walletSessions[params.walletSession.id] ?: throw Exception("Wallet session not found")
-			println("HAS VALID WC")
-			println("WALLET ADDRESS:" +params.walletAddress)
-			val result = VerificationManager.hasValidToken(
-				params.verificationType,
-				params.walletAddress,
-				walletSession
-			)
-			promise.resolve(result)
-		}
-	}
-
-
 	@ReactMethod
 	fun listWallets(promise: Promise) {
 		Log.d("RNWalletConnectManager", "listWallets()")
