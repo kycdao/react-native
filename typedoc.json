@@ -1,0 +1,13 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["src"],
+    "out": "./docs/api",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "excludeInternal": true,
+    "includeVersion": true,
+    "readme": "none",
+    "cleanOutputDir": false,
+    "hidePageTitle": true
+}

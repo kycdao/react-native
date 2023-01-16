@@ -31,15 +31,6 @@ extension WCURL {
     }
 }
 
-/*extension SmartContractConfig {
-    var asReactModel: RNSmartContractConfig {
-        RNSmartContractConfig(address: address,
-                              paymentDiscountPercent: paymentDiscountPercent,
-                              verificationType: verificationType,
-                              network: network)
-    }
-}*/
-
 extension VerificationSession {
     var asReactModel: RNVerificationSession {
         RNVerificationSession(id: id,
@@ -53,7 +44,8 @@ extension VerificationSession {
                               hasMembership: hasMembership,
                               disclaimerText: disclaimerText,
                               termsOfServiceURL: termsOfService.absoluteString,
-                              privacyPolicyURL: privacyPolicy.absoluteString)
+                              privacyPolicyURL: privacyPolicy.absoluteString,
+                              emailAddress: emailAddress)
     }
 }
 

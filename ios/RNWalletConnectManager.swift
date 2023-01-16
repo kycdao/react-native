@@ -10,18 +10,13 @@ import React
 import KycDao
 import Combine
 
-extension WalletConnectSession: Hashable {
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-}
+// MARK: -WalletConnectManager
 
 @objc(RNWalletConnectManager)
 class RNWalletConnectManager: RCTEventEmitter {
     
     private var sessionStartedCancellable: AnyCancellable?
+    private var pendingSessionURICancellable: AnyCancellable?
     private var hasListeners = false
     private var sessionsStarted: Set<WalletConnectSession> = Set()
     
@@ -36,42 +31,49 @@ class RNWalletConnectManager: RCTEventEmitter {
     override func supportedEvents() -> [String]! {
         [
             KycReactEvents.wcSessionStarted.rawValue,
-            KycReactEvents.wcSessionFailed.rawValue
+            KycReactEvents.wcSessionURIChanged.rawValue
         ]
     }
     
     @objc(startListening:reject:)
     func startListening(_ resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let uri = WalletConnectManager.shared.startListening()
-        resolve(uri)
         
-        guard sessionStartedCancellable == nil else { return }
-        
-        sessionStartedCancellable = WalletConnectManager.shared.sessionStart.sink { [weak self] result in
+        if sessionStartedCancellable == nil {
             
-            guard self?.hasListeners == true else { return }
-            switch result {
-            case .success(let walletSession):
-                guard let eventBody = try? walletSession.asReactModel.encodeToDictionary() else { return }
-                self?.sessionsStarted.insert(walletSession)
-                self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
-                                body: eventBody)
-            case .failure(.failedToConnect(wallet: let wallet)):
-                let walletJSON = try? wallet?.asReactModel.toJSON()
-                let rnError = RNError(message: "Failed to connect to wallet", data: walletJSON)
-                guard let eventBody = try? rnError.encodeToDictionary() else { return }
-                self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
-                                body: eventBody)
-            default:
-                break
+            sessionStartedCancellable = WalletConnectManager.shared.sessionStart.sink { [weak self] result in
+                
+                guard self?.hasListeners == true else { return }
+                switch result {
+                case .success(let walletSession):
+                    guard let eventBody = try? walletSession.asReactModel.encodeToDictionary() else { return }
+                    self?.sessionsStarted.insert(walletSession)
+                    self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
+                                    body: eventBody)
+                case .failure(.failedToConnect(wallet: let wallet)):
+                    let walletJSON = try? wallet?.asReactModel.toJSON()
+                    let rnError = RNError(message: "Failed to connect to wallet", data: walletJSON)
+                    guard let eventBody = try? rnError.encodeToDictionary() else { return }
+                    self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
+                                    body: eventBody)
+                default:
+                    break
+                }
+                
             }
-//            guard let eventBody = try? walletSession.asReactModel.encodeToDictionary() else { return }
-//            self?.sessionsStarted.insert(walletSession)
+        }
+        
+        if pendingSessionURICancellable == nil {
             
-//            self?.sendEvent(withName: KycReactEvents.wcSessionStarted.rawValue,
-//                            body: eventBody)
+            pendingSessionURICancellable = WalletConnectManager.shared.pendingSessionURI.sink { [weak self] uri in
+                guard self?.hasListeners == true else { return }
+                
+                self?.sendEvent(withName: KycReactEvents.wcSessionURIChanged.rawValue,
+                                body: uri)
+            }
             
         }
+            
+        WalletConnectManager.shared.startListening()
     }
     
     @objc(listWallets:reject:)
@@ -112,6 +114,16 @@ class RNWalletConnectManager: RCTEventEmitter {
         
     }
     
+    @objc override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
+}
+
+// MARK: -WallerConnectSession
+
+extension RNWalletConnectManager {
+    
     @objc(sign:account:message:resolve:reject:)
     func sign(_ sessionData: [String: Any], account: String, message: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         Task {
@@ -137,11 +149,12 @@ class RNWalletConnectManager: RCTEventEmitter {
                 
                 let session = try await fetchSessionFromData(sessionData)
                 
-                guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData) else { throw KycDaoError.genericError }
+                guard let mintingProperties = try? MintingProperties.decode(from: mintingPropertiesData)
+                else { throw KycDaoError.internal(.unknown) }
                 
-                let txHash = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
-                print("BRIDGE: Minting hash \(txHash)")
-                resolve(txHash)
+                let txRes = try await session.sendMintingTransaction(walletAddress: walletAddress, mintingProperties: mintingProperties)
+                let txResData = try txRes.encodeToDictionary()
+                resolve(txResData)
                 
             } catch let error {
                 reject("sendMintingTransaction", "Failed to mint NFT", error)
@@ -149,19 +162,22 @@ class RNWalletConnectManager: RCTEventEmitter {
         }
     }
     
-    @objc override static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-    
     private func fetchSessionFromData(_ sessionData: [String: Any]) async throws -> WalletConnectSession {
         
         let rnSession = try RNWalletSession.decode(from: sessionData)
-        guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString }) else {
-            throw KycDaoError.genericError
-        }
+        guard let session = sessionsStarted.first(where: { $0.url.absoluteString == rnSession.url.absoluteString })
+        else { throw KycDaoError.internal(.unknown) }
         
         return session
         
+    }
+    
+}
+
+extension WalletConnectSession: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
     
 }

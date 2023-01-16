@@ -11,15 +11,7 @@ import KycDao
 import Combine
 import UIKit
 
-extension VerificationSession: Hashable, Equatable {
-    public static func == (lhs: VerificationSession, rhs: VerificationSession) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}
+// MARK: -VerificationManager
 
 @objc(RNVerificationManager)
 class RNVerificationManager: RCTEventEmitter {
@@ -108,12 +100,18 @@ class RNVerificationManager: RCTEventEmitter {
     }
     
     @objc(hasValidToken:walletAddress:chainId:resolve:reject:)
-    func hasValidToken(_ verificationTypeData: String, walletAddress: String, chainId: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    func hasValidToken(
+        _ verificationTypeData: String,
+        walletAddress: String,
+        chainId: String,
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
         Task {
             do {
                 
                 let verificationType = VerificationType(rawValue: verificationTypeData)
-                guard let verificationType else { throw KycDaoError.genericError }
+                guard let verificationType else { throw KycDaoError.internal(.unknown) }
                 
                 let hasValidToken = try await VerificationManager.shared
                     .hasValidToken(verificationType: verificationType,
@@ -124,95 +122,47 @@ class RNVerificationManager: RCTEventEmitter {
                 
             } catch let error {
                 
-                reject("login", "Failed to login with wallet", error)
+                reject("hasValidToken", "Failed to check token validity for wallet", error)
                 
             }
         }
     }
     
-    @objc(personalSignSuccess:signature:)
-    func personalSignSuccess(_ walletSessionData: [String: Any], signature: String) {
-        
-        do {
-        
-            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
-            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
-            else {
-                throw KycDaoError.genericError
+    @objc(checkVerifiedNetworks:walletAddress:resolve:reject:)
+    func checkVerifiedNetworks(
+        _ verificationTypeData: String,
+        walletAddress: String,
+        resolve: @escaping RCTPromiseResolveBlock,
+        reject: @escaping RCTPromiseRejectBlock
+    ) {
+        Task {
+            do {
+                
+                let verificationType = VerificationType(rawValue: verificationTypeData)
+                guard let verificationType else { throw KycDaoError.internal(.unknown) }
+                
+                let verifiedNetworks = try await VerificationManager.shared
+                    .checkVerifiedNetworks(verificationType: verificationType, walletAddress: walletAddress)
+                
+                resolve(verifiedNetworks)
+                
+            } catch let error {
+                
+                reject("checkVerifiedNetworks", "Failed to check verified networks", error)
+                
             }
-            
-            walletSession.personalSignContinuation?.resume(returning: signature)
-            
-        } catch {
-            
-            print("Can not find session for personal sign response on the native layer")
-            
         }
-        
     }
     
-    @objc(personalSignFailure:reason:)
-    func personalSignFailure(_ walletSessionData: [String: Any], reason: String) {
-        
-        do {
-        
-            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
-            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
-            else {
-                throw KycDaoError.genericError
-            }
+    @objc override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+    
+}
 
-            walletSession.personalSignContinuation?.resume(throwing: KycDaoError.genericError)
-            
-        } catch {
-            
-            print("Can not find session for personal sign response on the native layer")
-            
-        }
-        
-    }
-    
-    @objc(mintingTransactionSuccess:txHash:)
-    func mintingTransactionSuccess(_ walletSessionData: [String: Any], txHash: String) {
-        
-        do {
-        
-            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
-            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
-            else {
-                throw KycDaoError.genericError
-            }
-            
-            walletSession.sendMintingTransactionContinuation?.resume(returning: txHash)
-            
-        } catch {
-            
-            print("Can not find session for minting transaction response on the native layer")
-            
-        }
-        
-    }
-    
-    @objc(mintingTransactionFailure:reason:)
-    func mintingTransactionFailure(_ walletSessionData: [String: Any], reason: String) {
-        
-        do {
-        
-            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
-            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
-            else {
-                throw KycDaoError.genericError
-            }
+// MARK: -VerificationSession
 
-            walletSession.sendMintingTransactionContinuation?.resume(throwing: KycDaoError.genericError)
-            
-        } catch {
-            
-            print("Can not find session for minting transaction response on the native layer")
-            
-        }
-        
-    }
+extension RNVerificationManager {
     
     @objc(login:resolve:reject:)
     func login(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
@@ -338,7 +288,7 @@ class RNVerificationManager: RCTEventEmitter {
             guard let keyWindow = activeTopMostWindowScene?.windows.first(where: { $0.isKeyWindow }),
                   let rootViewController = keyWindow.rootViewController
             else {
-                reject("startIdentification", "Failed to start identification", KycDaoError.genericError)
+                reject("startIdentification", "Failed to start identification", KycDaoError.internal(.unknown))
                 return
             }
                 do {
@@ -370,13 +320,13 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
-    @objc(getMembershipCostPerYear:resolve:reject:)
-    func getMembershipCostPerYear(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(getMembershipCostPerYearText:resolve:reject:)
+    func getMembershipCostPerYearText(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let session = try fetchSessionFromData(sessionData)
-                let costPerYear = try await session.getMembershipCostPerYear()
+                let costPerYear = try await session.getMembershipCostPerYearText()
                 resolve(costPerYear)
             } catch let error {
                 reject("getMembershipCostPerYear", "Failed to get cost per year: \(error)", error)
@@ -404,13 +354,33 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
+    @objc(regenerateNFTImages:resolve:reject:)
+    func regenerateNFTImages(_ sessionData: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        
+        Task {
+            do {
+                
+                let session = try fetchSessionFromData(sessionData)
+                let images = try await session.regenerateNFTImages()
+                    .map { $0.asReactModel }
+                let rnImages = try images.encodeToArray()
+                
+                resolve(rnImages)
+                
+            } catch let error {
+                reject("regenerateNFTImages", "Failed to regenerate nft images", error)
+            }
+        }
+        
+    }
+    
     @objc(requestMinting:selectedImageId:membershipDuration:resolve:reject:)
     func requestMinting(_ sessionData: [String: Any], selectedImageId: String, membershipDuration membershipDurationSigned: NSNumber, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         
         Task {
             do {
                 let membershipDuration = UInt32(exactly: membershipDurationSigned)
-                guard let membershipDuration else { throw KycDaoError.genericError }
+                guard let membershipDuration else { throw KycDaoError.internal(.unknown) }
                 
                 let session = try fetchSessionFromData(sessionData)
                 try await session.requestMinting(selectedImageId: selectedImageId, membershipDuration: membershipDuration)
@@ -443,7 +413,7 @@ class RNVerificationManager: RCTEventEmitter {
         Task {
             do {
                 let yearsPurchased = UInt32(exactly: yearsPurchased)
-                guard let yearsPurchased else { throw KycDaoError.genericError }
+                guard let yearsPurchased else { throw KycDaoError.internal(.unknown) }
                 
                 let session = try fetchSessionFromData(sessionData)
                 let paymentEstimation = try await session.estimatePayment(yearsPurchased: yearsPurchased)
@@ -494,20 +464,117 @@ class RNVerificationManager: RCTEventEmitter {
         
     }
     
-    @objc override static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-    
     private func fetchSessionFromData(_ sessionData: [String: Any]) throws -> VerificationSession {
         
         let rnSession = try RNVerificationSession.decode(from: sessionData)
         guard let session = sessions.first(where: { $0.id == rnSession.id })
         else {
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
         
         return session
         
     }
     
+}
+
+
+// MARK: -Wallet response handling
+extension RNVerificationManager {
+    
+    @objc(personalSignSuccess:signature:)
+    func personalSignSuccess(_ walletSessionData: [String: Any], signature: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KycDaoError.internal(.unknown)
+            }
+            
+            walletSession.personalSignContinuation?.resume(returning: signature)
+            
+        } catch {
+            
+            print("Can not find session for personal sign response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(personalSignFailure:reason:)
+    func personalSignFailure(_ walletSessionData: [String: Any], reason: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KycDaoError.internal(.unknown)
+            }
+
+            walletSession.personalSignContinuation?.resume(throwing: KycDaoError.internal(.unknown))
+            
+        } catch {
+            
+            print("Can not find session for personal sign response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(mintingTransactionSuccess:mintingTransactionResultData:)
+    func mintingTransactionSuccess(_ walletSessionData: [String: Any], mintingTransactionResultData: [String: Any]) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            let mintingTransactionResult = try MintingTransactionResult.decode(from: mintingTransactionResultData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KycDaoError.internal(.unknown)
+            }
+            
+            walletSession.sendMintingTransactionContinuation?.resume(returning: mintingTransactionResult)
+            
+        } catch {
+            
+            print("Can not find session for minting transaction response on the native layer")
+            
+        }
+        
+    }
+    
+    @objc(mintingTransactionFailure:reason:)
+    func mintingTransactionFailure(_ walletSessionData: [String: Any], reason: String) {
+        
+        do {
+        
+            let rnWalletSession = try RNWalletSession.decode(from: walletSessionData)
+            guard let walletSession = sessions.first(where: { kycSession in kycSession.walletSession.id == rnWalletSession.id })?.walletSession as? RNWalletSession
+            else {
+                throw KycDaoError.internal(.unknown)
+            }
+
+            walletSession.sendMintingTransactionContinuation?.resume(throwing: KycDaoError.internal(.unknown))
+            
+        } catch {
+            
+            print("Can not find session for minting transaction response on the native layer")
+            
+        }
+        
+    }
+    
+}
+
+extension VerificationSession: Hashable, Equatable {
+    public static func == (lhs: VerificationSession, rhs: VerificationSession) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }

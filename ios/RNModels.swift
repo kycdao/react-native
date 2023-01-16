@@ -12,7 +12,7 @@ import BigInt
 
 enum KycReactEvents: String, Codable {
     case wcSessionStarted = "WC_SESSION_STARTED"
-    case wcSessionFailed = "WC_SESSION_FAILED"
+    case wcSessionURIChanged = "WC_SESSION_URI_CHANGED"
     case methodPersonalSign = "METHOD_PERSONAL_SIGN"
     case methodMintingTransaction = "METHOD_MINTING_TRANSACTION"
 }
@@ -29,11 +29,11 @@ class RNWalletSession: Codable, WalletSessionProtocol {
     internal var personalSignHandler: ((String, String) -> Void)?
     internal var sendMintingTransactionHandler: ((String, MintingProperties) -> Void)?
     var personalSignContinuation: CheckedContinuation<String, Error>?
-    var sendMintingTransactionContinuation: CheckedContinuation<String, Error>?
+    var sendMintingTransactionContinuation: CheckedContinuation<MintingTransactionResult, Error>?
     
     func personalSign(walletAddress: String, message: String) async throws -> String {
         guard let personalSignHandler = personalSignHandler else {
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
 
         personalSignHandler(walletAddress, message)
@@ -42,13 +42,13 @@ class RNWalletSession: Codable, WalletSessionProtocol {
         }
     }
     
-    func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> String {
+    func sendMintingTransaction(walletAddress: String, mintingProperties: MintingProperties) async throws -> MintingTransactionResult {
         guard let sendMintingTransactionHandler = sendMintingTransactionHandler else {
-            throw KycDaoError.genericError
+            throw KycDaoError.internal(.unknown)
         }
 
         sendMintingTransactionHandler(walletAddress, mintingProperties)
-        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<String, Error>) in
+        return try await withCheckedThrowingContinuation { [weak self] (continuation: CheckedContinuation<MintingTransactionResult, Error>) in
             self?.sendMintingTransactionContinuation = continuation
         }
     }
@@ -119,6 +119,7 @@ struct RNVerificationSession: Codable {
     var disclaimerText: String
     var termsOfServiceURL: String
     var privacyPolicyURL: String
+    var emailAddress: String?
 }
 
 struct RNSmartContractConfig: Codable {
