@@ -6,7 +6,7 @@ install! 'cocoapods', :deterministic_uuids => false
 
 ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 
-source 'https://github.com/Cydie/kyc-dao-mobile-spec.git'
+# source 'https://github.com/Cydie/kyc-dao-mobile-spec.git'
 source 'https://github.com/CocoaPods/Specs.git'
 
 target 'KycdaoMobileExample' do
@@ -16,9 +16,8 @@ target 'KycdaoMobileExample' do
   flags = get_default_flags()
 
   pod 'secp256k1.swift', :modular_headers => true
-   pod 'KycDao', :path => '~/Bitraptors/Projects/kycdao-ios-sdk'
-  #  pod 'KycDao'
-  # pod 'kycdao-mobile', path => '~/Bitraptors/RelatedProjects/kycdao-mobile'
+  # pod 'KycDao', :path => '~/Bitraptors/Projects/kycdao-ios-sdk'
+    pod 'KycDao'
 
   use_react_native!(
     :path => config[:reactNativePath],
