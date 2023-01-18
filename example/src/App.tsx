@@ -54,7 +54,7 @@ export default function App() {
       if (verificationSession.requiredInformationProvided === false) {
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
         let personalData = new PersonalData(
-          "robin@bitraptors.com", "HU"
+          "adam@bitraptors.com", "HU"
         );
         await verificationSession.setPersonalData(personalData);
         console.log("REACT DEBUG: UPDATE USER");
