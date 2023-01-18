@@ -53,8 +53,10 @@ export default function App() {
 
       if (verificationSession.requiredInformationProvided === false) {
         console.log("REACT DEBUG: ACCEPT DISCLAIMER");
+        console.error("Change email from example@example.com to a valid email to test this. Comment out this and the next line of code when ready");
+        throw Error("Email not configured in personal data");
         let personalData = new PersonalData(
-          "adam@bitraptors.com", "HU"
+          "example@example.com", "HU"
         );
         await verificationSession.setPersonalData(personalData);
         console.log("REACT DEBUG: UPDATE USER");
